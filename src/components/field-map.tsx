@@ -26,10 +26,41 @@ export function FieldMap({
   const layerRef = useRef<L.Polygon | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
   const [pts, setPts] = useState<[number, number][]>(initial ?? []); // [lat,lng]
+  const [past, setPast] = useState<[number, number][][]>([]);
+  const [future, setFuture] = useState<[number, number][][]>([]);
+  const ptsRef = useRef(pts);
+  useEffect(() => { ptsRef.current = pts; }, [pts]);
+  const pastRef = useRef(past);
+  useEffect(() => { pastRef.current = past; }, [past]);
+  const futureRef = useRef(future);
+  useEffect(() => { futureRef.current = future; }, [future]);
   const [mode, setMode] = useState<"add" | "edit">("add");
   const modeRef = useRef(mode);
   useEffect(() => { modeRef.current = mode; }, [mode]);
   const [search, setSearch] = useState("");
+
+  // Commit a new pts state as a user action: push previous onto history, clear redo.
+  function commit(next: [number, number][]) {
+    setPast((p) => [...p, ptsRef.current]);
+    setFuture([]);
+    setPts(next);
+  }
+  function undo() {
+    const p = pastRef.current;
+    if (p.length === 0) return;
+    const prev = p[p.length - 1];
+    setPast((s) => s.slice(0, -1));
+    setFuture((f) => [ptsRef.current, ...f]);
+    setPts(prev);
+  }
+  function redo() {
+    const f = futureRef.current;
+    if (f.length === 0) return;
+    const nextState = f[0];
+    setFuture((s) => s.slice(1));
+    setPast((s) => [...s, ptsRef.current]);
+    setPts(nextState);
+  }
 
   useEffect(() => {
     if (!ref.current || mapRef.current) return;
