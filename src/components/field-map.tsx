@@ -63,6 +63,19 @@ export function FieldMap({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Compute area/centroid and emit onChange for a given point set.
+  function emitChange(next: [number, number][]) {
+    if (next.length < 3) { onChange?.(null); return; }
+    const ring: [number, number][] = next.map((p) => [p[1], p[0]]);
+    ring.push(ring[0]);
+    const gj = { type: "Feature" as const, geometry: { type: "Polygon" as const, coordinates: [ring] }, properties: {} };
+    const area_m2 = turfArea(gj);
+    const area_acres = area_m2 / 4046.8564224;
+    const latSum = next.reduce((s, p) => s + p[0], 0) / next.length;
+    const lngSum = next.reduce((s, p) => s + p[1], 0) / next.length;
+    onChange?.({ coords: next.map((p) => [p[1], p[0]]), area_m2, area_acres, centroid: { lat: latSum, lng: lngSum } });
+  }
+
   // redraw polygon and markers on pts/mode change
   useEffect(() => {
     const m = mapRef.current;
