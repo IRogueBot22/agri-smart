@@ -81,7 +81,7 @@ export function FieldMap({
       const mk = L.marker([p[0], p[1]], { icon, draggable: !readOnly });
       mk.addTo(m);
       if (!readOnly) {
-        mk.on("dragend", (ev: L.LeafletEvent) => {
+        mk.on("drag", (ev: L.LeafletEvent) => {
           const ll = (ev.target as L.Marker).getLatLng();
           setPts((prev) => prev.map((q, idx) => (idx === i ? [ll.lat, ll.lng] : q)));
         });
