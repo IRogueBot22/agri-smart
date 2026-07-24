@@ -43,6 +43,9 @@ export function FieldMap({
   const watchIdRef = useRef<number | null>(null);
   const [liveOn, setLiveOn] = useState(false);
   const [liveInfo, setLiveInfo] = useState<{ lat: number; lng: number; acc: number } | null>(null);
+  const [follow, setFollow] = useState(false);
+  const followRef = useRef(follow);
+  useEffect(() => { followRef.current = follow; }, [follow]);
 
   // Commit a new pts state as a user action: push previous onto history, clear redo.
   function commit(next: [number, number][]) {
