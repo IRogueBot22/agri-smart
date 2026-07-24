@@ -43,6 +43,9 @@ export function FieldMap({
   const watchIdRef = useRef<number | null>(null);
   const [liveOn, setLiveOn] = useState(false);
   const [liveInfo, setLiveInfo] = useState<{ lat: number; lng: number; acc: number } | null>(null);
+  const [follow, setFollow] = useState(false);
+  const followRef = useRef(follow);
+  useEffect(() => { followRef.current = follow; }, [follow]);
 
   // Commit a new pts state as a user action: push previous onto history, clear redo.
   function commit(next: [number, number][]) {
@@ -83,6 +86,8 @@ export function FieldMap({
         commit([...ptsRef.current, [e.latlng.lat, e.latlng.lng]]);
       });
     }
+    // User panning the map cancels follow-mode.
+    m.on("dragstart", () => { if (followRef.current) setFollow(false); });
 
     if (initial && initial.length >= 3) {
       const b = L.latLngBounds(initial.map((p) => L.latLng(p[0], p[1])));
@@ -208,12 +213,14 @@ export function FieldMap({
     liveMarkerRef.current?.remove(); liveMarkerRef.current = null;
     liveAccRef.current?.remove(); liveAccRef.current = null;
     setLiveOn(false);
+    setFollow(false);
     setLiveInfo(null);
   }
   function toggleLive() {
     if (liveOn) { stopLive(); return; }
     if (typeof navigator === "undefined" || !navigator.geolocation || !mapRef.current) return;
     setLiveOn(true);
+    setFollow(true);
     let first = true;
     watchIdRef.current = navigator.geolocation.watchPosition(
       (pos) => {
@@ -235,6 +242,7 @@ export function FieldMap({
         }
         setLiveInfo({ lat: latitude, lng: longitude, acc: accuracy });
         if (first) { m.setView(ll, Math.max(m.getZoom(), 17)); first = false; }
+        else if (followRef.current) { m.panTo(ll, { animate: true }); }
       },
       () => { stopLive(); },
       { enableHighAccuracy: true, maximumAge: 1000, timeout: 15000 }
@@ -251,10 +259,23 @@ export function FieldMap({
             onClick={toggleLive}
             className={`rounded-xl px-3 py-1.5 border ${liveOn ? "bg-primary text-primary-foreground border-primary" : "bg-background border-border"}`}
           >{liveOn ? "● Live location on" : "○ Live location"}</button>
+          {liveOn && (
+            <button
+              type="button"
+              onClick={() => {
+                const nextFollow = !follow;
+                setFollow(nextFollow);
+                if (nextFollow && liveInfo && mapRef.current) {
+                  mapRef.current.setView([liveInfo.lat, liveInfo.lng], Math.max(mapRef.current.getZoom(), 17));
+                }
+              }}
+              className={`rounded-xl px-3 py-1.5 border ${follow ? "bg-primary text-primary-foreground border-primary" : "bg-background border-border"}`}
+            >{follow ? "🎯 Following" : "🎯 Follow"}</button>
+          )}
           {liveInfo && (
             <span className="text-muted-foreground">±{Math.round(liveInfo.acc)} m</span>
           )}
-          {liveInfo && (
+          {liveInfo && !follow && (
             <button
               type="button"
               onClick={() => mapRef.current?.setView([liveInfo.lat, liveInfo.lng], Math.max(mapRef.current.getZoom(), 17))}
