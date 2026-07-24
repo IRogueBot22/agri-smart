@@ -1,0 +1,68 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { AppShell } from "@/components/app-shell";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { listMarketPrices } from "@/lib/public.functions";
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis } from "recharts";
+import { TrendingUp, TrendingDown } from "lucide-react";
+
+export const Route = createFileRoute("/_authenticated/market")({
+  head: () => ({ meta: [
+    { title: "Market Prices — AgriSmart AI" },
+    { name: "description", content: "Latest mandi prices for crops across India." },
+  ]}),
+  component: Market,
+});
+
+function fakeTrend(base: number) {
+  return Array.from({ length: 7 }, (_, i) => ({ day: `D${i + 1}`, price: Math.round(base * (0.9 + Math.random() * 0.2)) }));
+}
+
+function Market() {
+  const list = useServerFn(listMarketPrices);
+  const [rows, setRows] = useState<any[]>([]);
+  const [q, setQ] = useState("");
+  useEffect(() => { list().then(setRows); }, [list]);
+
+  const filtered = rows.filter((r) => (r.crop + " " + r.market + " " + r.state).toLowerCase().includes(q.toLowerCase()));
+
+  return (
+    <AppShell title="Market Prices" back="/home">
+      <div className="space-y-3 px-4 pt-4">
+        <Input placeholder="Search crop or market…" value={q} onChange={(e) => setQ(e.target.value)} />
+        {filtered.map((r) => {
+          const diff = r.prev_price ? Number(r.price_per_quintal) - Number(r.prev_price) : 0;
+          const up = diff >= 0;
+          const pct = r.prev_price ? ((diff / Number(r.prev_price)) * 100).toFixed(1) : "0";
+          const trend = fakeTrend(Number(r.price_per_quintal));
+          return (
+            <Card key={r.id} className="shadow-soft"><CardContent className="p-4">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="font-semibold">{r.crop}</div>
+                  <div className="text-xs text-muted-foreground">{r.market} · {r.state}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-lg font-bold text-primary">₹{Number(r.price_per_quintal).toLocaleString("en-IN")}</div>
+                  <div className={`flex items-center justify-end text-xs ${up ? "text-primary" : "text-destructive"}`}>
+                    {up ? <TrendingUp className="mr-1 h-3 w-3" /> : <TrendingDown className="mr-1 h-3 w-3" />}
+                    {up ? "+" : ""}{diff} ({pct}%)
+                  </div>
+                </div>
+              </div>
+              <div className="mt-2 h-16">
+                <ResponsiveContainer><LineChart data={trend}>
+                  <XAxis dataKey="day" hide /><YAxis hide domain={["auto", "auto"]} />
+                  <Line type="monotone" dataKey="price" stroke="var(--primary)" strokeWidth={2} dot={false} />
+                </LineChart></ResponsiveContainer>
+              </div>
+              <div className="text-xs text-muted-foreground">per Quintal</div>
+            </CardContent></Card>
+          );
+        })}
+      </div>
+    </AppShell>
+  );
+}
