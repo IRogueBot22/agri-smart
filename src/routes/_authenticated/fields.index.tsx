@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Leaf, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/_authenticated/fields")({
+export const Route = createFileRoute("/_authenticated/fields/")({
   head: () => ({ meta: [
     { title: "My Fields — AgriSmart AI" },
     { name: "description", content: "All your mapped farm fields with area, crop, and soil." },
