@@ -203,12 +203,18 @@ export function FieldMap({
           </div>
           <button
             type="button"
-            onClick={undoLast}
-            disabled={pts.length === 0}
+            onClick={undo}
+            disabled={past.length === 0}
             className="rounded-xl border border-border px-3 py-1.5 text-xs disabled:opacity-40"
           >↶ Undo</button>
+          <button
+            type="button"
+            onClick={redo}
+            disabled={future.length === 0}
+            className="rounded-xl border border-border px-3 py-1.5 text-xs disabled:opacity-40"
+          >↷ Redo</button>
           {pts.length > 0 && (
-            <button type="button" className="ml-auto text-xs text-destructive underline" onClick={() => setPts([])}>Clear all</button>
+            <button type="button" className="ml-auto text-xs text-destructive underline" onClick={() => commit([])}>Clear all</button>
           )}
         </div>
       )}
