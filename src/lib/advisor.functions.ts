@@ -129,7 +129,11 @@ Respond ONLY with strict JSON:
     return out;
   });
 
-const DiseaseInput = z.object({ imageDataUrl: z.string().startsWith("data:image/"), fieldId: z.string().uuid().optional() });
+const DiseaseInput = z.object({
+  imageDataUrl: z.string().startsWith("data:image/"),
+  storagePath: z.string().optional(),
+  fieldId: z.string().uuid().optional(),
+});
 
 export const detectDisease = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -140,12 +144,13 @@ export const detectDisease = createServerFn({ method: "POST" })
     const body = {
       model: MODEL,
       messages: [
-        { role: "system", content: "You are a plant pathology expert. Identify the disease on the leaf. Output strict JSON only." },
+        { role: "system", content: "You are a plant pathology expert trained on the PlantVillage disease dataset. Identify the disease on the leaf image, estimate a confidence score, and give farmer-friendly recommendations. Output strict JSON only." },
         {
           role: "user",
           content: [
-            { type: "text", text: `Analyze this leaf image. Respond ONLY as strict JSON:
-{"disease":"<name or 'Healthy'>","confidence":<0-100>,"description":"<1-2 sentence description>","recommendation":["<action 1>","<action 2>","<action 3>"]}` },
+            { type: "text", text: `Analyze this leaf photo end-to-end and diagnose the plant disease.
+Respond ONLY as strict JSON matching this exact shape:
+{"disease":"<specific disease name or 'Healthy'>","crop":"<detected crop>","severity":"Low"|"Medium"|"High"|"None","confidence":<0-100 integer>,"description":"<1-2 sentence plain-English explanation of what you see>","recommendation":["<organic action>","<chemical action>","<preventive action>"],"chemicals":["<optional pesticide/fungicide name + dose>"]}` },
             { type: "image_url", image_url: { url: data.imageDataUrl } },
           ],
         },
@@ -168,10 +173,11 @@ export const detectDisease = createServerFn({ method: "POST" })
     await context.supabase.from("disease_scans").insert({
       user_id: context.userId,
       field_id: data.fieldId ?? null,
-      image_url: "inline",
+      image_url: data.storagePath ?? "inline",
       disease: out.disease,
       confidence: out.confidence,
       recommendation: (out.recommendation ?? []).join(" • "),
     });
     return out;
   });
+
