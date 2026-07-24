@@ -263,10 +263,6 @@ export function FieldMap({
           )}
         </div>
       )}
-      <div className="hidden">
-        {/* placeholder to preserve prior structure */}
-      </div>
-      <div className="space-y-2">
       {!readOnly && (
         <div className="flex gap-2">
           <input
