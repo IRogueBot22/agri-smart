@@ -75,7 +75,7 @@ export function FieldMap({
     if (!readOnly) {
       m.on("click", (e: L.LeafletMouseEvent) => {
         if (modeRef.current !== "add") return;
-        setPts((prev) => [...prev, [e.latlng.lat, e.latlng.lng]]);
+        commit([...ptsRef.current, [e.latlng.lat, e.latlng.lng]]);
       });
     }
 
