@@ -200,9 +200,49 @@ export function FieldMap({
     navigator.geolocation.getCurrentPosition((pos) => mapRef.current!.setView([pos.coords.latitude, pos.coords.longitude], 17));
   }
 
-  
+  function stopLive() {
+    if (watchIdRef.current !== null && typeof navigator !== "undefined") {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+    }
+    watchIdRef.current = null;
+    liveMarkerRef.current?.remove(); liveMarkerRef.current = null;
+    liveAccRef.current?.remove(); liveAccRef.current = null;
+    setLiveOn(false);
+    setLiveInfo(null);
+  }
+  function toggleLive() {
+    if (liveOn) { stopLive(); return; }
+    if (typeof navigator === "undefined" || !navigator.geolocation || !mapRef.current) return;
+    setLiveOn(true);
+    let first = true;
+    watchIdRef.current = navigator.geolocation.watchPosition(
+      (pos) => {
+        const m = mapRef.current; if (!m) return;
+        const { latitude, longitude, accuracy } = pos.coords;
+        const ll = L.latLng(latitude, longitude);
+        if (!liveMarkerRef.current) {
+          const icon = L.divIcon({
+            className: "",
+            iconSize: [18, 18],
+            iconAnchor: [9, 9],
+            html: `<div style="width:14px;height:14px;border-radius:9999px;background:#1E88E5;border:3px solid #fff;box-shadow:0 0 0 2px rgba(30,136,229,.35),0 1px 4px rgba(0,0,0,.4)"></div>`,
+          });
+          liveMarkerRef.current = L.marker(ll, { icon, interactive: false }).addTo(m);
+          liveAccRef.current = L.circle(ll, { radius: accuracy, color: "#1E88E5", weight: 1, fillOpacity: 0.1 }).addTo(m);
+        } else {
+          liveMarkerRef.current.setLatLng(ll);
+          liveAccRef.current?.setLatLng(ll).setRadius(accuracy);
+        }
+        setLiveInfo({ lat: latitude, lng: longitude, acc: accuracy });
+        if (first) { m.setView(ll, Math.max(m.getZoom(), 17)); first = false; }
+      },
+      () => { stopLive(); },
+      { enableHighAccuracy: true, maximumAge: 1000, timeout: 15000 }
+    );
+  }
+  useEffect(() => () => { stopLive(); }, []);
 
-  return (
+  
     <div className="space-y-2">
       {!readOnly && (
         <div className="flex gap-2">
