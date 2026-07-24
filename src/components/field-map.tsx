@@ -83,6 +83,15 @@ export function FieldMap({
       if (!readOnly) {
         mk.on("drag", (ev: L.LeafletEvent) => {
           const ll = (ev.target as L.Marker).getLatLng();
+          // Live update without rebuilding markers (which would break the drag gesture).
+          const next: [number, number][] = pts.map((q, idx) => (idx === i ? [ll.lat, ll.lng] : q));
+          if (layerRef.current && next.length >= 3) {
+            layerRef.current.setLatLngs(next.map((p) => L.latLng(p[0], p[1])));
+            emitChange(next);
+          }
+        });
+        mk.on("dragend", (ev: L.LeafletEvent) => {
+          const ll = (ev.target as L.Marker).getLatLng();
           setPts((prev) => prev.map((q, idx) => (idx === i ? [ll.lat, ll.lng] : q)));
         });
         mk.on("click", (ev: L.LeafletMouseEvent) => {
