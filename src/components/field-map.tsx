@@ -63,6 +63,19 @@ export function FieldMap({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Compute area/centroid and emit onChange for a given point set.
+  function emitChange(next: [number, number][]) {
+    if (next.length < 3) { onChange?.(null); return; }
+    const ring: [number, number][] = next.map((p) => [p[1], p[0]]);
+    ring.push(ring[0]);
+    const gj = { type: "Feature" as const, geometry: { type: "Polygon" as const, coordinates: [ring] }, properties: {} };
+    const area_m2 = turfArea(gj);
+    const area_acres = area_m2 / 4046.8564224;
+    const latSum = next.reduce((s, p) => s + p[0], 0) / next.length;
+    const lngSum = next.reduce((s, p) => s + p[1], 0) / next.length;
+    onChange?.({ coords: next.map((p) => [p[1], p[0]]), area_m2, area_acres, centroid: { lat: latSum, lng: lngSum } });
+  }
+
   // redraw polygon and markers on pts/mode change
   useEffect(() => {
     const m = mapRef.current;
@@ -81,6 +94,15 @@ export function FieldMap({
       const mk = L.marker([p[0], p[1]], { icon, draggable: !readOnly });
       mk.addTo(m);
       if (!readOnly) {
+        mk.on("drag", (ev: L.LeafletEvent) => {
+          const ll = (ev.target as L.Marker).getLatLng();
+          // Live update without rebuilding markers (which would break the drag gesture).
+          const next: [number, number][] = pts.map((q, idx) => (idx === i ? [ll.lat, ll.lng] : q));
+          if (layerRef.current && next.length >= 3) {
+            layerRef.current.setLatLngs(next.map((p) => L.latLng(p[0], p[1])));
+            emitChange(next);
+          }
+        });
         mk.on("dragend", (ev: L.LeafletEvent) => {
           const ll = (ev.target as L.Marker).getLatLng();
           setPts((prev) => prev.map((q, idx) => (idx === i ? [ll.lat, ll.lng] : q)));
@@ -101,23 +123,8 @@ export function FieldMap({
         color: "#2E7D32", weight: 3, fillColor: "#4CAF50", fillOpacity: 0.3,
       }).addTo(m);
       layerRef.current = poly;
-
-      const ring: [number, number][] = pts.map((p) => [p[1], p[0]]);
-      ring.push(ring[0]);
-      const gj = { type: "Feature" as const, geometry: { type: "Polygon" as const, coordinates: [ring] }, properties: {} };
-      const area_m2 = turfArea(gj);
-      const area_acres = area_m2 / 4046.8564224;
-      const latSum = pts.reduce((s, p) => s + p[0], 0) / pts.length;
-      const lngSum = pts.reduce((s, p) => s + p[1], 0) / pts.length;
-      onChange?.({
-        coords: pts.map((p) => [p[1], p[0]]),
-        area_m2,
-        area_acres,
-        centroid: { lat: latSum, lng: lngSum },
-      });
-    } else {
-      onChange?.(null);
     }
+    emitChange(pts);
   }, [pts, mode, onChange, readOnly]);
 
   async function locateSearch() {
