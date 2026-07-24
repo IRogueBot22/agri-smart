@@ -14,7 +14,280 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      disease_scans: {
+        Row: {
+          confidence: number | null
+          created_at: string
+          disease: string | null
+          field_id: string | null
+          id: string
+          image_url: string
+          recommendation: string | null
+          user_id: string
+        }
+        Insert: {
+          confidence?: number | null
+          created_at?: string
+          disease?: string | null
+          field_id?: string | null
+          id?: string
+          image_url: string
+          recommendation?: string | null
+          user_id: string
+        }
+        Update: {
+          confidence?: number | null
+          created_at?: string
+          disease?: string | null
+          field_id?: string | null
+          id?: string
+          image_url?: string
+          recommendation?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "disease_scans_field_id_fkey"
+            columns: ["field_id"]
+            isOneToOne: false
+            referencedRelation: "fields"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fields: {
+        Row: {
+          area_acres: number
+          centroid_lat: number
+          centroid_lng: number
+          created_at: string
+          crop: string | null
+          id: string
+          image_url: string | null
+          name: string
+          polygon: Json
+          soil_type: string | null
+          updated_at: string
+          user_id: string
+          water_source: string | null
+        }
+        Insert: {
+          area_acres: number
+          centroid_lat: number
+          centroid_lng: number
+          created_at?: string
+          crop?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          polygon: Json
+          soil_type?: string | null
+          updated_at?: string
+          user_id: string
+          water_source?: string | null
+        }
+        Update: {
+          area_acres?: number
+          centroid_lat?: number
+          centroid_lng?: number
+          created_at?: string
+          crop?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          polygon?: Json
+          soil_type?: string | null
+          updated_at?: string
+          user_id?: string
+          water_source?: string | null
+        }
+        Relationships: []
+      }
+      government_schemes: {
+        Row: {
+          apply_url: string
+          benefits: string
+          category: string
+          created_at: string
+          description: string
+          documents: string
+          eligibility: string
+          id: string
+          image_url: string | null
+          official_url: string
+          title: string
+        }
+        Insert: {
+          apply_url: string
+          benefits: string
+          category: string
+          created_at?: string
+          description: string
+          documents: string
+          eligibility: string
+          id?: string
+          image_url?: string | null
+          official_url: string
+          title: string
+        }
+        Update: {
+          apply_url?: string
+          benefits?: string
+          category?: string
+          created_at?: string
+          description?: string
+          documents?: string
+          eligibility?: string
+          id?: string
+          image_url?: string | null
+          official_url?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      market_prices: {
+        Row: {
+          created_at: string
+          crop: string
+          id: string
+          market: string
+          prev_price: number | null
+          price_per_quintal: number
+          recorded_on: string
+          state: string
+        }
+        Insert: {
+          created_at?: string
+          crop: string
+          id?: string
+          market: string
+          prev_price?: number | null
+          price_per_quintal: number
+          recorded_on?: string
+          state: string
+        }
+        Update: {
+          created_at?: string
+          crop?: string
+          id?: string
+          market?: string
+          prev_price?: number | null
+          price_per_quintal?: number
+          recorded_on?: string
+          state?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          kind: string
+          read: boolean
+          title: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          kind: string
+          read?: boolean
+          title: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          read?: boolean
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          dark_mode: boolean
+          district: string | null
+          email: string | null
+          full_name: string | null
+          id: string
+          language: string
+          phone: string | null
+          state: string | null
+          updated_at: string
+          village: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          dark_mode?: boolean
+          district?: string | null
+          email?: string | null
+          full_name?: string | null
+          id: string
+          language?: string
+          phone?: string | null
+          state?: string | null
+          updated_at?: string
+          village?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          dark_mode?: boolean
+          district?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          language?: string
+          phone?: string | null
+          state?: string | null
+          updated_at?: string
+          village?: string | null
+        }
+        Relationships: []
+      }
+      recommendations: {
+        Row: {
+          created_at: string
+          field_id: string | null
+          id: string
+          kind: string
+          payload: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          field_id?: string | null
+          id?: string
+          kind: string
+          payload: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          field_id?: string | null
+          id?: string
+          kind?: string
+          payload?: Json
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recommendations_field_id_fkey"
+            columns: ["field_id"]
+            isOneToOne: false
+            referencedRelation: "fields"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
