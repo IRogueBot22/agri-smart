@@ -242,8 +242,31 @@ export function FieldMap({
   }
   useEffect(() => () => { stopLive(); }, []);
 
-  
+  return (
     <div className="space-y-2">
+      {!readOnly && (
+        <div className="flex items-center gap-2 text-xs">
+          <button
+            type="button"
+            onClick={toggleLive}
+            className={`rounded-xl px-3 py-1.5 border ${liveOn ? "bg-primary text-primary-foreground border-primary" : "bg-background border-border"}`}
+          >{liveOn ? "● Live location on" : "○ Live location"}</button>
+          {liveInfo && (
+            <span className="text-muted-foreground">±{Math.round(liveInfo.acc)} m</span>
+          )}
+          {liveInfo && (
+            <button
+              type="button"
+              onClick={() => mapRef.current?.setView([liveInfo.lat, liveInfo.lng], Math.max(mapRef.current.getZoom(), 17))}
+              className="ml-auto rounded-xl border border-border px-3 py-1.5"
+            >Recenter</button>
+          )}
+        </div>
+      )}
+      <div className="hidden">
+        {/* placeholder to preserve prior structure */}
+      </div>
+      <div className="space-y-2">
       {!readOnly && (
         <div className="flex gap-2">
           <input
