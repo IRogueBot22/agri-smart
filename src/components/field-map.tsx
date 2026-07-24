@@ -38,6 +38,11 @@ export function FieldMap({
   const modeRef = useRef(mode);
   useEffect(() => { modeRef.current = mode; }, [mode]);
   const [search, setSearch] = useState("");
+  const liveMarkerRef = useRef<L.Marker | null>(null);
+  const liveAccRef = useRef<L.Circle | null>(null);
+  const watchIdRef = useRef<number | null>(null);
+  const [liveOn, setLiveOn] = useState(false);
+  const [liveInfo, setLiveInfo] = useState<{ lat: number; lng: number; acc: number } | null>(null);
 
   // Commit a new pts state as a user action: push previous onto history, clear redo.
   function commit(next: [number, number][]) {
@@ -195,10 +200,69 @@ export function FieldMap({
     navigator.geolocation.getCurrentPosition((pos) => mapRef.current!.setView([pos.coords.latitude, pos.coords.longitude], 17));
   }
 
-  
+  function stopLive() {
+    if (watchIdRef.current !== null && typeof navigator !== "undefined") {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+    }
+    watchIdRef.current = null;
+    liveMarkerRef.current?.remove(); liveMarkerRef.current = null;
+    liveAccRef.current?.remove(); liveAccRef.current = null;
+    setLiveOn(false);
+    setLiveInfo(null);
+  }
+  function toggleLive() {
+    if (liveOn) { stopLive(); return; }
+    if (typeof navigator === "undefined" || !navigator.geolocation || !mapRef.current) return;
+    setLiveOn(true);
+    let first = true;
+    watchIdRef.current = navigator.geolocation.watchPosition(
+      (pos) => {
+        const m = mapRef.current; if (!m) return;
+        const { latitude, longitude, accuracy } = pos.coords;
+        const ll = L.latLng(latitude, longitude);
+        if (!liveMarkerRef.current) {
+          const icon = L.divIcon({
+            className: "",
+            iconSize: [18, 18],
+            iconAnchor: [9, 9],
+            html: `<div style="width:14px;height:14px;border-radius:9999px;background:#1E88E5;border:3px solid #fff;box-shadow:0 0 0 2px rgba(30,136,229,.35),0 1px 4px rgba(0,0,0,.4)"></div>`,
+          });
+          liveMarkerRef.current = L.marker(ll, { icon, interactive: false }).addTo(m);
+          liveAccRef.current = L.circle(ll, { radius: accuracy, color: "#1E88E5", weight: 1, fillOpacity: 0.1 }).addTo(m);
+        } else {
+          liveMarkerRef.current.setLatLng(ll);
+          liveAccRef.current?.setLatLng(ll).setRadius(accuracy);
+        }
+        setLiveInfo({ lat: latitude, lng: longitude, acc: accuracy });
+        if (first) { m.setView(ll, Math.max(m.getZoom(), 17)); first = false; }
+      },
+      () => { stopLive(); },
+      { enableHighAccuracy: true, maximumAge: 1000, timeout: 15000 }
+    );
+  }
+  useEffect(() => () => { stopLive(); }, []);
 
   return (
     <div className="space-y-2">
+      {!readOnly && (
+        <div className="flex items-center gap-2 text-xs">
+          <button
+            type="button"
+            onClick={toggleLive}
+            className={`rounded-xl px-3 py-1.5 border ${liveOn ? "bg-primary text-primary-foreground border-primary" : "bg-background border-border"}`}
+          >{liveOn ? "● Live location on" : "○ Live location"}</button>
+          {liveInfo && (
+            <span className="text-muted-foreground">±{Math.round(liveInfo.acc)} m</span>
+          )}
+          {liveInfo && (
+            <button
+              type="button"
+              onClick={() => mapRef.current?.setView([liveInfo.lat, liveInfo.lng], Math.max(mapRef.current.getZoom(), 17))}
+              className="ml-auto rounded-xl border border-border px-3 py-1.5"
+            >Recenter</button>
+          )}
+        </div>
+      )}
       {!readOnly && (
         <div className="flex gap-2">
           <input
