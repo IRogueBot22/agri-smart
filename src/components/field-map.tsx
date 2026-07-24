@@ -136,12 +136,12 @@ export function FieldMap({
         });
         mk.on("dragend", (ev: L.LeafletEvent) => {
           const ll = (ev.target as L.Marker).getLatLng();
-          setPts((prev) => prev.map((q, idx) => (idx === i ? [ll.lat, ll.lng] : q)));
+          commit(ptsRef.current.map((q, idx) => (idx === i ? [ll.lat, ll.lng] : q)));
         });
         mk.on("click", (ev: L.LeafletMouseEvent) => {
           L.DomEvent.stopPropagation(ev);
           if (modeRef.current === "edit") {
-            setPts((prev) => prev.filter((_, idx) => idx !== i));
+            commit(ptsRef.current.filter((_, idx) => idx !== i));
           }
         });
         mk.bindTooltip(modeRef.current === "edit" ? "Tap to delete • drag to move" : "Drag to move", { direction: "top", offset: [0, -8] });
