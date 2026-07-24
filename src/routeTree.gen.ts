@@ -13,7 +13,15 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SchemesIndexRouteImport } from './routes/schemes.index'
+import { Route as SchemesIdRouteImport } from './routes/schemes.$id'
+import { Route as AuthenticatedWeatherRouteImport } from './routes/_authenticated/weather'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
+import { Route as AuthenticatedMarketRouteImport } from './routes/_authenticated/market'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
+import { Route as AuthenticatedDiseaseRouteImport } from './routes/_authenticated/disease'
+import { Route as AuthenticatedAdvisorRouteImport } from './routes/_authenticated/advisor'
 import { Route as AuthenticatedFieldsIndexRouteImport } from './routes/_authenticated/fields.index'
 import { Route as AuthenticatedFieldsNewRouteImport } from './routes/_authenticated/fields.new'
 import { Route as AuthenticatedFieldsIdRouteImport } from './routes/_authenticated/fields.$id'
@@ -37,9 +45,50 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SchemesIndexRoute = SchemesIndexRouteImport.update({
+  id: '/schemes/',
+  path: '/schemes/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SchemesIdRoute = SchemesIdRouteImport.update({
+  id: '/schemes/$id',
+  path: '/schemes/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedWeatherRoute = AuthenticatedWeatherRouteImport.update({
+  id: '/weather',
+  path: '/weather',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedNotificationsRoute =
+  AuthenticatedNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMarketRoute = AuthenticatedMarketRouteImport.update({
+  id: '/market',
+  path: '/market',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
   id: '/home',
   path: '/home',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDiseaseRoute = AuthenticatedDiseaseRouteImport.update({
+  id: '/disease',
+  path: '/disease',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAdvisorRoute = AuthenticatedAdvisorRouteImport.update({
+  id: '/advisor',
+  path: '/advisor',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedFieldsIndexRoute =
@@ -63,7 +112,15 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
+  '/advisor': typeof AuthenticatedAdvisorRoute
+  '/disease': typeof AuthenticatedDiseaseRoute
   '/home': typeof AuthenticatedHomeRoute
+  '/market': typeof AuthenticatedMarketRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
+  '/profile': typeof AuthenticatedProfileRoute
+  '/weather': typeof AuthenticatedWeatherRoute
+  '/schemes/$id': typeof SchemesIdRoute
+  '/schemes/': typeof SchemesIndexRoute
   '/fields/$id': typeof AuthenticatedFieldsIdRoute
   '/fields/new': typeof AuthenticatedFieldsNewRoute
   '/fields/': typeof AuthenticatedFieldsIndexRoute
@@ -72,7 +129,15 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
+  '/advisor': typeof AuthenticatedAdvisorRoute
+  '/disease': typeof AuthenticatedDiseaseRoute
   '/home': typeof AuthenticatedHomeRoute
+  '/market': typeof AuthenticatedMarketRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
+  '/profile': typeof AuthenticatedProfileRoute
+  '/weather': typeof AuthenticatedWeatherRoute
+  '/schemes/$id': typeof SchemesIdRoute
+  '/schemes': typeof SchemesIndexRoute
   '/fields/$id': typeof AuthenticatedFieldsIdRoute
   '/fields/new': typeof AuthenticatedFieldsNewRoute
   '/fields': typeof AuthenticatedFieldsIndexRoute
@@ -83,7 +148,15 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
+  '/_authenticated/advisor': typeof AuthenticatedAdvisorRoute
+  '/_authenticated/disease': typeof AuthenticatedDiseaseRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
+  '/_authenticated/market': typeof AuthenticatedMarketRoute
+  '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/weather': typeof AuthenticatedWeatherRoute
+  '/schemes/$id': typeof SchemesIdRoute
+  '/schemes/': typeof SchemesIndexRoute
   '/_authenticated/fields/$id': typeof AuthenticatedFieldsIdRoute
   '/_authenticated/fields/new': typeof AuthenticatedFieldsNewRoute
   '/_authenticated/fields/': typeof AuthenticatedFieldsIndexRoute
@@ -94,7 +167,15 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/onboarding'
+    | '/advisor'
+    | '/disease'
     | '/home'
+    | '/market'
+    | '/notifications'
+    | '/profile'
+    | '/weather'
+    | '/schemes/$id'
+    | '/schemes/'
     | '/fields/$id'
     | '/fields/new'
     | '/fields/'
@@ -103,7 +184,15 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/onboarding'
+    | '/advisor'
+    | '/disease'
     | '/home'
+    | '/market'
+    | '/notifications'
+    | '/profile'
+    | '/weather'
+    | '/schemes/$id'
+    | '/schemes'
     | '/fields/$id'
     | '/fields/new'
     | '/fields'
@@ -113,7 +202,15 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/onboarding'
+    | '/_authenticated/advisor'
+    | '/_authenticated/disease'
     | '/_authenticated/home'
+    | '/_authenticated/market'
+    | '/_authenticated/notifications'
+    | '/_authenticated/profile'
+    | '/_authenticated/weather'
+    | '/schemes/$id'
+    | '/schemes/'
     | '/_authenticated/fields/$id'
     | '/_authenticated/fields/new'
     | '/_authenticated/fields/'
@@ -124,6 +221,8 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   OnboardingRoute: typeof OnboardingRoute
+  SchemesIdRoute: typeof SchemesIdRoute
+  SchemesIndexRoute: typeof SchemesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -156,11 +255,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/schemes/': {
+      id: '/schemes/'
+      path: '/schemes'
+      fullPath: '/schemes/'
+      preLoaderRoute: typeof SchemesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/schemes/$id': {
+      id: '/schemes/$id'
+      path: '/schemes/$id'
+      fullPath: '/schemes/$id'
+      preLoaderRoute: typeof SchemesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/weather': {
+      id: '/_authenticated/weather'
+      path: '/weather'
+      fullPath: '/weather'
+      preLoaderRoute: typeof AuthenticatedWeatherRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/notifications': {
+      id: '/_authenticated/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/market': {
+      id: '/_authenticated/market'
+      path: '/market'
+      fullPath: '/market'
+      preLoaderRoute: typeof AuthenticatedMarketRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/home': {
       id: '/_authenticated/home'
       path: '/home'
       fullPath: '/home'
       preLoaderRoute: typeof AuthenticatedHomeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/disease': {
+      id: '/_authenticated/disease'
+      path: '/disease'
+      fullPath: '/disease'
+      preLoaderRoute: typeof AuthenticatedDiseaseRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/advisor': {
+      id: '/_authenticated/advisor'
+      path: '/advisor'
+      fullPath: '/advisor'
+      preLoaderRoute: typeof AuthenticatedAdvisorRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/fields/': {
@@ -188,14 +343,26 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdvisorRoute: typeof AuthenticatedAdvisorRoute
+  AuthenticatedDiseaseRoute: typeof AuthenticatedDiseaseRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
+  AuthenticatedMarketRoute: typeof AuthenticatedMarketRoute
+  AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedWeatherRoute: typeof AuthenticatedWeatherRoute
   AuthenticatedFieldsIdRoute: typeof AuthenticatedFieldsIdRoute
   AuthenticatedFieldsNewRoute: typeof AuthenticatedFieldsNewRoute
   AuthenticatedFieldsIndexRoute: typeof AuthenticatedFieldsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdvisorRoute: AuthenticatedAdvisorRoute,
+  AuthenticatedDiseaseRoute: AuthenticatedDiseaseRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
+  AuthenticatedMarketRoute: AuthenticatedMarketRoute,
+  AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
+  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedWeatherRoute: AuthenticatedWeatherRoute,
   AuthenticatedFieldsIdRoute: AuthenticatedFieldsIdRoute,
   AuthenticatedFieldsNewRoute: AuthenticatedFieldsNewRoute,
   AuthenticatedFieldsIndexRoute: AuthenticatedFieldsIndexRoute,
@@ -209,6 +376,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   OnboardingRoute: OnboardingRoute,
+  SchemesIdRoute: SchemesIdRoute,
+  SchemesIndexRoute: SchemesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
