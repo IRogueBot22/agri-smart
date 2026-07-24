@@ -247,8 +247,8 @@ export function FieldMap({
       {!readOnly && (
         <div className="text-xs text-muted-foreground">
           {mode === "add"
-            ? "Tap map to add corners. Drag any marker to fine-tune. Switch to Edit to delete."
-            : "Tap a numbered marker to delete it, or drag it to reshape. Area updates live."}
+            ? "Tap map to add corners, or tap an edge to insert a vertex. Drag markers to fine-tune."
+            : "Tap a numbered marker to delete it, drag to reshape, or tap an edge to insert a vertex."}
         </div>
       )}
     </div>
