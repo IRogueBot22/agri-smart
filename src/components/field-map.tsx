@@ -26,10 +26,41 @@ export function FieldMap({
   const layerRef = useRef<L.Polygon | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
   const [pts, setPts] = useState<[number, number][]>(initial ?? []); // [lat,lng]
+  const [past, setPast] = useState<[number, number][][]>([]);
+  const [future, setFuture] = useState<[number, number][][]>([]);
+  const ptsRef = useRef(pts);
+  useEffect(() => { ptsRef.current = pts; }, [pts]);
+  const pastRef = useRef(past);
+  useEffect(() => { pastRef.current = past; }, [past]);
+  const futureRef = useRef(future);
+  useEffect(() => { futureRef.current = future; }, [future]);
   const [mode, setMode] = useState<"add" | "edit">("add");
   const modeRef = useRef(mode);
   useEffect(() => { modeRef.current = mode; }, [mode]);
   const [search, setSearch] = useState("");
+
+  // Commit a new pts state as a user action: push previous onto history, clear redo.
+  function commit(next: [number, number][]) {
+    setPast((p) => [...p, ptsRef.current]);
+    setFuture([]);
+    setPts(next);
+  }
+  function undo() {
+    const p = pastRef.current;
+    if (p.length === 0) return;
+    const prev = p[p.length - 1];
+    setPast((s) => s.slice(0, -1));
+    setFuture((f) => [ptsRef.current, ...f]);
+    setPts(prev);
+  }
+  function redo() {
+    const f = futureRef.current;
+    if (f.length === 0) return;
+    const nextState = f[0];
+    setFuture((s) => s.slice(1));
+    setPast((s) => [...s, ptsRef.current]);
+    setPts(nextState);
+  }
 
   useEffect(() => {
     if (!ref.current || mapRef.current) return;
@@ -44,7 +75,7 @@ export function FieldMap({
     if (!readOnly) {
       m.on("click", (e: L.LeafletMouseEvent) => {
         if (modeRef.current !== "add") return;
-        setPts((prev) => [...prev, [e.latlng.lat, e.latlng.lng]]);
+        commit([...ptsRef.current, [e.latlng.lat, e.latlng.lng]]);
       });
     }
 
@@ -105,12 +136,12 @@ export function FieldMap({
         });
         mk.on("dragend", (ev: L.LeafletEvent) => {
           const ll = (ev.target as L.Marker).getLatLng();
-          setPts((prev) => prev.map((q, idx) => (idx === i ? [ll.lat, ll.lng] : q)));
+          commit(ptsRef.current.map((q, idx) => (idx === i ? [ll.lat, ll.lng] : q)));
         });
         mk.on("click", (ev: L.LeafletMouseEvent) => {
           L.DomEvent.stopPropagation(ev);
           if (modeRef.current === "edit") {
-            setPts((prev) => prev.filter((_, idx) => idx !== i));
+            commit(ptsRef.current.filter((_, idx) => idx !== i));
           }
         });
         mk.bindTooltip(modeRef.current === "edit" ? "Tap to delete • drag to move" : "Drag to move", { direction: "top", offset: [0, -8] });
@@ -139,7 +170,7 @@ export function FieldMap({
     navigator.geolocation.getCurrentPosition((pos) => mapRef.current!.setView([pos.coords.latitude, pos.coords.longitude], 17));
   }
 
-  function undoLast() { setPts((prev) => prev.slice(0, -1)); }
+  
 
   return (
     <div className="space-y-2">
@@ -172,12 +203,18 @@ export function FieldMap({
           </div>
           <button
             type="button"
-            onClick={undoLast}
-            disabled={pts.length === 0}
+            onClick={undo}
+            disabled={past.length === 0}
             className="rounded-xl border border-border px-3 py-1.5 text-xs disabled:opacity-40"
           >↶ Undo</button>
+          <button
+            type="button"
+            onClick={redo}
+            disabled={future.length === 0}
+            className="rounded-xl border border-border px-3 py-1.5 text-xs disabled:opacity-40"
+          >↷ Redo</button>
           {pts.length > 0 && (
-            <button type="button" className="ml-auto text-xs text-destructive underline" onClick={() => setPts([])}>Clear all</button>
+            <button type="button" className="ml-auto text-xs text-destructive underline" onClick={() => commit([])}>Clear all</button>
           )}
         </div>
       )}
