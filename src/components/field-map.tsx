@@ -259,10 +259,23 @@ export function FieldMap({
             onClick={toggleLive}
             className={`rounded-xl px-3 py-1.5 border ${liveOn ? "bg-primary text-primary-foreground border-primary" : "bg-background border-border"}`}
           >{liveOn ? "● Live location on" : "○ Live location"}</button>
+          {liveOn && (
+            <button
+              type="button"
+              onClick={() => {
+                const nextFollow = !follow;
+                setFollow(nextFollow);
+                if (nextFollow && liveInfo && mapRef.current) {
+                  mapRef.current.setView([liveInfo.lat, liveInfo.lng], Math.max(mapRef.current.getZoom(), 17));
+                }
+              }}
+              className={`rounded-xl px-3 py-1.5 border ${follow ? "bg-primary text-primary-foreground border-primary" : "bg-background border-border"}`}
+            >{follow ? "🎯 Following" : "🎯 Follow"}</button>
+          )}
           {liveInfo && (
             <span className="text-muted-foreground">±{Math.round(liveInfo.acc)} m</span>
           )}
-          {liveInfo && (
+          {liveInfo && !follow && (
             <button
               type="button"
               onClick={() => mapRef.current?.setView([liveInfo.lat, liveInfo.lng], Math.max(mapRef.current.getZoom(), 17))}
