@@ -38,6 +38,11 @@ export function FieldMap({
   const modeRef = useRef(mode);
   useEffect(() => { modeRef.current = mode; }, [mode]);
   const [search, setSearch] = useState("");
+  const liveMarkerRef = useRef<L.Marker | null>(null);
+  const liveAccRef = useRef<L.Circle | null>(null);
+  const watchIdRef = useRef<number | null>(null);
+  const [liveOn, setLiveOn] = useState(false);
+  const [liveInfo, setLiveInfo] = useState<{ lat: number; lng: number; acc: number } | null>(null);
 
   // Commit a new pts state as a user action: push previous onto history, clear redo.
   function commit(next: [number, number][]) {
