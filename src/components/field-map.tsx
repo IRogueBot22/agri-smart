@@ -170,7 +170,7 @@ export function FieldMap({
     navigator.geolocation.getCurrentPosition((pos) => mapRef.current!.setView([pos.coords.latitude, pos.coords.longitude], 17));
   }
 
-  function undoLast() { setPts((prev) => prev.slice(0, -1)); }
+  
 
   return (
     <div className="space-y-2">
