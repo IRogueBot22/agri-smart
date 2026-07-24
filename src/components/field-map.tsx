@@ -153,6 +153,31 @@ export function FieldMap({
       const poly = L.polygon(pts.map((p) => L.latLng(p[0], p[1])), {
         color: "#2E7D32", weight: 3, fillColor: "#4CAF50", fillOpacity: 0.3,
       }).addTo(m);
+      if (!readOnly) {
+        // Tap an edge to insert a new vertex at the nearest point on that edge.
+        poly.on("click", (ev: L.LeafletMouseEvent) => {
+          L.DomEvent.stopPropagation(ev);
+          const cur = ptsRef.current;
+          if (cur.length < 2) return;
+          const clickPt = m.latLngToLayerPoint(ev.latlng);
+          let bestIdx = 0;
+          let bestDist = Infinity;
+          for (let i = 0; i < cur.length; i++) {
+            const a = m.latLngToLayerPoint(L.latLng(cur[i][0], cur[i][1]));
+            const b = m.latLngToLayerPoint(L.latLng(cur[(i + 1) % cur.length][0], cur[(i + 1) % cur.length][1]));
+            const dx = b.x - a.x, dy = b.y - a.y;
+            const len2 = dx * dx + dy * dy || 1;
+            let t = ((clickPt.x - a.x) * dx + (clickPt.y - a.y) * dy) / len2;
+            t = Math.max(0, Math.min(1, t));
+            const px = a.x + t * dx, py = a.y + t * dy;
+            const d = Math.hypot(clickPt.x - px, clickPt.y - py);
+            if (d < bestDist) { bestDist = d; bestIdx = i; }
+          }
+          const next = [...cur];
+          next.splice(bestIdx + 1, 0, [ev.latlng.lat, ev.latlng.lng]);
+          commit(next);
+        });
+      }
       layerRef.current = poly;
     }
     emitChange(pts);
