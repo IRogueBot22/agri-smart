@@ -86,6 +86,8 @@ export function FieldMap({
         commit([...ptsRef.current, [e.latlng.lat, e.latlng.lng]]);
       });
     }
+    // User panning the map cancels follow-mode.
+    m.on("dragstart", () => { if (followRef.current) setFollow(false); });
 
     if (initial && initial.length >= 3) {
       const b = L.latLngBounds(initial.map((p) => L.latLng(p[0], p[1])));
