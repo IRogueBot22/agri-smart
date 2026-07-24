@@ -123,23 +123,8 @@ export function FieldMap({
         color: "#2E7D32", weight: 3, fillColor: "#4CAF50", fillOpacity: 0.3,
       }).addTo(m);
       layerRef.current = poly;
-
-      const ring: [number, number][] = pts.map((p) => [p[1], p[0]]);
-      ring.push(ring[0]);
-      const gj = { type: "Feature" as const, geometry: { type: "Polygon" as const, coordinates: [ring] }, properties: {} };
-      const area_m2 = turfArea(gj);
-      const area_acres = area_m2 / 4046.8564224;
-      const latSum = pts.reduce((s, p) => s + p[0], 0) / pts.length;
-      const lngSum = pts.reduce((s, p) => s + p[1], 0) / pts.length;
-      onChange?.({
-        coords: pts.map((p) => [p[1], p[0]]),
-        area_m2,
-        area_acres,
-        centroid: { lat: latSum, lng: lngSum },
-      });
-    } else {
-      onChange?.(null);
     }
+    emitChange(pts);
   }, [pts, mode, onChange, readOnly]);
 
   async function locateSearch() {
