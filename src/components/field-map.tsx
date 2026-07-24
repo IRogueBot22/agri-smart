@@ -240,6 +240,7 @@ export function FieldMap({
         }
         setLiveInfo({ lat: latitude, lng: longitude, acc: accuracy });
         if (first) { m.setView(ll, Math.max(m.getZoom(), 17)); first = false; }
+        else if (followRef.current) { m.panTo(ll, { animate: true }); }
       },
       () => { stopLive(); },
       { enableHighAccuracy: true, maximumAge: 1000, timeout: 15000 }
