@@ -218,6 +218,7 @@ export function FieldMap({
     if (liveOn) { stopLive(); return; }
     if (typeof navigator === "undefined" || !navigator.geolocation || !mapRef.current) return;
     setLiveOn(true);
+    setFollow(true);
     let first = true;
     watchIdRef.current = navigator.geolocation.watchPosition(
       (pos) => {
