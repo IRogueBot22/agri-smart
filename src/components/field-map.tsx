@@ -211,6 +211,7 @@ export function FieldMap({
     liveMarkerRef.current?.remove(); liveMarkerRef.current = null;
     liveAccRef.current?.remove(); liveAccRef.current = null;
     setLiveOn(false);
+    setFollow(false);
     setLiveInfo(null);
   }
   function toggleLive() {
