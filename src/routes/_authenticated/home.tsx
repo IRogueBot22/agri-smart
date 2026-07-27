@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/app-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { getWeather } from "@/lib/weather.functions";
+import { cacheGet, cacheSet } from "@/components/offline-banner";
 import { Cloud, CloudRain, Droplets, Wind, Sprout, Bug, TrendingUp, Landmark, Leaf, Sun } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/home")({
@@ -17,30 +18,32 @@ export const Route = createFileRoute("/_authenticated/home")({
 
 function Home() {
   const [name, setName] = useState("Farmer");
-  const [field, setField] = useState<any>(null);
-  const [weather, setWeather] = useState<any>(null);
+  const [field, setField] = useState<any>(() => cacheGet<any>("home-field"));
+  const [weather, setWeather] = useState<any>(() => cacheGet<any>("home-weather"));
   const fetchWeather = useServerFn(getWeather);
 
-  useEffect(() => {
-    (async () => {
-      const { data: u } = await supabase.auth.getUser();
-      const { data: p } = await supabase.from("profiles").select("full_name").eq("id", u.user!.id).maybeSingle();
-      if (p?.full_name) setName(p.full_name.split(" ")[0]);
-      const { data: fs } = await supabase.from("fields").select("*").order("created_at", { ascending: false }).limit(1);
-      const f = fs?.[0]; if (f) setField(f);
-      const lat = f?.centroid_lat ?? 17.385;
-      const lng = f?.centroid_lng ?? 78.4867;
-      try {
-        const w = await fetchWeather({ data: { lat, lng } });
-        setWeather(w);
-      } catch (e) { console.error(e); }
-    })();
+  const load = useCallback(async () => {
+    const { data: u } = await supabase.auth.getUser();
+    const { data: p } = await supabase.from("profiles").select("full_name").eq("id", u.user!.id).maybeSingle();
+    if (p?.full_name) setName(p.full_name.split(" ")[0]);
+    const { data: fs } = await supabase.from("fields").select("*").order("created_at", { ascending: false }).limit(1);
+    const f = fs?.[0]; if (f) { setField(f); cacheSet("home-field", f); }
+    const lat = f?.centroid_lat ?? 17.385;
+    const lng = f?.centroid_lng ?? 78.4867;
+    try {
+      const w = await fetchWeather({ data: { lat, lng } });
+      setWeather(w);
+      cacheSet("home-weather", w);
+    } catch (e) { console.error(e); }
   }, [fetchWeather]);
+
+  useEffect(() => { load(); }, [load]);
 
   const c = weather?.weather?.current;
 
   return (
-    <AppShell>
+    <AppShell onRefresh={load}>
+
       <div className="space-y-4 px-4 pt-4">
         <div>
           <p className="text-xs text-muted-foreground">Good day,</p>
