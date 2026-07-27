@@ -1,6 +1,7 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Home, Map, Sparkles, Bell, User } from "lucide-react";
+import { Home, Map, Sparkles, Bell, User, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PullToRefresh } from "@/components/pull-to-refresh";
 
 const items = [
   { to: "/home", icon: Home, label: "Home" },
@@ -40,7 +41,33 @@ export function BottomNav() {
   );
 }
 
-export function AppShell({ children, title, back }: { children: React.ReactNode; title?: string; back?: string }) {
+export function FloatingChatButton() {
+  const { pathname } = useLocation();
+  if (pathname.startsWith("/advisor")) return null;
+  return (
+    <Link
+      to="/advisor"
+      aria-label="Ask AI Advisor"
+      className="fixed bottom-24 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-primary text-primary-foreground shadow-soft transition-transform active:scale-95 md:right-[calc(50%-14rem+1rem)]"
+    >
+      <MessageCircle className="h-6 w-6" />
+      <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[9px] font-bold text-accent-foreground">AI</span>
+    </Link>
+  );
+}
+
+export function AppShell({
+  children,
+  title,
+  back,
+  onRefresh,
+}: {
+  children: React.ReactNode;
+  title?: string;
+  back?: string;
+  onRefresh?: () => void | Promise<void>;
+}) {
+  const content = <main className="flex-1">{children}</main>;
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col bg-background pb-24">
       {title && (
@@ -53,7 +80,8 @@ export function AppShell({ children, title, back }: { children: React.ReactNode;
           <h1 className="text-base font-semibold">{title}</h1>
         </header>
       )}
-      <main className="flex-1">{children}</main>
+      {onRefresh ? <PullToRefresh onRefresh={onRefresh}>{content}</PullToRefresh> : content}
+      <FloatingChatButton />
       <BottomNav />
     </div>
   );
