@@ -83,6 +83,8 @@ function Profile() {
           <Button onClick={save} className="w-full bg-gradient-primary shadow-soft">Save changes</Button>
         </CardContent></Card>
 
+        <NotificationSettings />
+
         <Card className="shadow-soft"><CardContent className="flex items-center justify-between p-4">
           <div><div className="font-medium">Dark mode</div><div className="text-xs text-muted-foreground">Reduce brightness at night</div></div>
           <Switch checked={dark} onCheckedChange={toggleDark} />
