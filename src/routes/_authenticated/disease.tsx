@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { detectDisease } from "@/lib/advisor.functions";
 import { combineDiagnoses, rankDiagnoses, type RankedDisease } from "@/lib/rank-diagnoses";
 import { supabase } from "@/integrations/supabase/client";
+import { ScanHistory } from "@/components/scan-history";
 import { Camera, Upload, Bug, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 
