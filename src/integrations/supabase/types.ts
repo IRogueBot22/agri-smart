@@ -245,7 +245,13 @@ export type Database = {
           full_name: string | null
           id: string
           language: string
+          notify_disease: boolean
+          notify_recommendations: boolean
+          notify_weather: boolean
           phone: string | null
+          quiet_end: string
+          quiet_hours_enabled: boolean
+          quiet_start: string
           state: string | null
           updated_at: string
           village: string | null
@@ -259,7 +265,13 @@ export type Database = {
           full_name?: string | null
           id: string
           language?: string
+          notify_disease?: boolean
+          notify_recommendations?: boolean
+          notify_weather?: boolean
           phone?: string | null
+          quiet_end?: string
+          quiet_hours_enabled?: boolean
+          quiet_start?: string
           state?: string | null
           updated_at?: string
           village?: string | null
@@ -273,7 +285,13 @@ export type Database = {
           full_name?: string | null
           id?: string
           language?: string
+          notify_disease?: boolean
+          notify_recommendations?: boolean
+          notify_weather?: boolean
           phone?: string | null
+          quiet_end?: string
+          quiet_hours_enabled?: boolean
+          quiet_start?: string
           state?: string | null
           updated_at?: string
           village?: string | null
