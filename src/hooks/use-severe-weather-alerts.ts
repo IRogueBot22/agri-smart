@@ -109,6 +109,9 @@ export function useSevereWeatherAlerts() {
     async function check() {
       const c = coordsRef.current;
       if (!c) return;
+      // Respect the farmer's category switches and quiet hours.
+      const prefs = await fetchPrefs().catch(() => cachedPrefs());
+      if (!shouldDeliver(prefs, "weather").allowed) return;
       try {
         const w = await fetchWeather(c.lat, c.lng);
         const alerts = evaluate(w);
