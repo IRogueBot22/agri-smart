@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getWeather } from "@/lib/weather.functions";
 import { fetchWeatherClient } from "@/lib/weather-core";
+import { useAutoRefresh } from "@/hooks/use-auto-refresh";
 import {
   Cloud, CloudRain, Sun, Wind, Droplets, Gauge, Sunrise, Sunset,
   MapPin, RefreshCw, Thermometer, Eye, Compass,
@@ -36,10 +37,10 @@ function WeatherView() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fetchWeather = useServerFn(getWeather);
-  const timerRef = useRef<any>(null);
+  const coordsRef = useRef<{ lat: number; lng: number; source: string } | null>(null);
 
-  async function load(lat: number, lng: number, source: string) {
-    setLoading(true);
+  async function load(lat: number, lng: number, source: string, silent = false) {
+    if (!silent) setLoading(true);
     setError(null);
     try {
       let res: any;
@@ -50,15 +51,17 @@ function WeatherView() {
         res = await fetchWeatherClient(lat, lng);
       }
       setW(res);
-      setCoords({ lat, lng, source });
+      const next = { lat, lng, source };
+      coordsRef.current = next;
+      setCoords(next);
     } catch (e: any) {
-      setError(e?.message ?? "Failed to load weather");
+      if (!silent) setError(e?.message ?? "Failed to load weather");
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }
 
-  async function detectAndLoad() {
+  async function detectAndLoad(silent = false) {
     // Try browser geolocation first for truly live location
     const gpsPromise = new Promise<{ lat: number; lng: number } | null>((resolve) => {
       if (!("geolocation" in navigator)) return resolve(null);
@@ -69,23 +72,25 @@ function WeatherView() {
       );
     });
     const gps = await gpsPromise;
-    if (gps) return load(gps.lat, gps.lng, "GPS");
+    if (gps) return load(gps.lat, gps.lng, "GPS", silent);
 
     const { data: fs } = await supabase.from("fields").select("centroid_lat,centroid_lng").limit(1);
     const lat = fs?.[0]?.centroid_lat ?? 17.385;
     const lng = fs?.[0]?.centroid_lng ?? 78.4867;
-    load(lat, lng, fs?.[0] ? "Farm" : "Default");
+    load(lat, lng, fs?.[0] ? "Farm" : "Default", silent);
   }
 
   useEffect(() => {
     detectAndLoad();
-    // auto-refresh every 5 minutes
-    timerRef.current = setInterval(() => {
-      if (coords) load(coords.lat, coords.lng, coords.source);
-    }, 5 * 60 * 1000);
-    return () => clearInterval(timerRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Background job: silent refresh every 5 min (paused when tab hidden, resumes on focus/online)
+  useAutoRefresh(() => {
+    const c = coordsRef.current;
+    if (c) return load(c.lat, c.lng, c.source, true);
+    return detectAndLoad(true);
+  }, 5 * 60 * 1000);
 
   const c = w?.weather?.current;
   const d = w?.weather?.daily;
@@ -114,7 +119,7 @@ function WeatherView() {
           <Button
             variant="ghost" size="sm"
             className="h-7 gap-1 px-2"
-            onClick={detectAndLoad}
+            onClick={() => detectAndLoad()}
             disabled={loading}
           >
             <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
