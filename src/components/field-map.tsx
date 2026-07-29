@@ -131,15 +131,19 @@ export function FieldMap({
     markersRef.current = [];
 
     pts.forEach((p, i) => {
+      const isSel = selected === i;
+      const size = isSel ? 28 : 22;
+      const bg = isSel ? "#F9A825" : "#4CAF50";
       const icon = L.divIcon({
         className: "",
-        iconSize: [22, 22],
-        iconAnchor: [11, 11],
-        html: `<div style="width:22px;height:22px;border-radius:9999px;background:#4CAF50;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700">${i + 1}</div>`,
+        iconSize: [size, size],
+        iconAnchor: [size / 2, size / 2],
+        html: `<div style="width:${size}px;height:${size}px;border-radius:9999px;background:${bg};border:${isSel ? 3 : 2}px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700">${i + 1}</div>`,
       });
       const mk = L.marker([p[0], p[1]], { icon, draggable: !readOnly });
       mk.addTo(m);
       if (!readOnly) {
+        mk.on("dragstart", () => setSelected(i));
         mk.on("drag", (ev: L.LeafletEvent) => {
           const ll = (ev.target as L.Marker).getLatLng();
           // Live update without rebuilding markers (which would break the drag gesture).
@@ -153,13 +157,13 @@ export function FieldMap({
           const ll = (ev.target as L.Marker).getLatLng();
           commit(ptsRef.current.map((q, idx) => (idx === i ? [ll.lat, ll.lng] : q)));
         });
+        // Tapping selects the corner — deletion is an explicit action in the
+        // vertex panel so a stray tap can never destroy a boundary point.
         mk.on("click", (ev: L.LeafletMouseEvent) => {
           L.DomEvent.stopPropagation(ev);
-          if (modeRef.current === "edit") {
-            commit(ptsRef.current.filter((_, idx) => idx !== i));
-          }
+          setSelected((cur) => (cur === i ? null : i));
         });
-        mk.bindTooltip(modeRef.current === "edit" ? "Tap to delete • drag to move" : "Drag to move", { direction: "top", offset: [0, -8] });
+        mk.bindTooltip(`Corner ${i + 1} — drag to adjust, tap to select`, { direction: "top", offset: [0, -8] });
       }
       markersRef.current.push(mk);
     });
