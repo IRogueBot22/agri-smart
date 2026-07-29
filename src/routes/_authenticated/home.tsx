@@ -46,6 +46,9 @@ function Home() {
 
   useEffect(() => { load(); }, [load]);
 
+  // Background job: refresh weather every 5 min while the tab is visible
+  useAutoRefresh(load, 5 * 60 * 1000);
+
   const c = weather?.weather?.current;
 
   return (
