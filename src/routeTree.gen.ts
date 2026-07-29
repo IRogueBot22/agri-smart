@@ -25,6 +25,7 @@ import { Route as AuthenticatedAdvisorRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedFieldsIndexRouteImport } from './routes/_authenticated/fields.index'
 import { Route as AuthenticatedFieldsNewRouteImport } from './routes/_authenticated/fields.new'
 import { Route as AuthenticatedFieldsIdRouteImport } from './routes/_authenticated/fields.$id'
+import { Route as ApiPublicAiDiseaseScanRouteImport } from './routes/api/public/ai/disease-scan'
 import { Route as ApiPublicAiDiseaseRouteImport } from './routes/api/public/ai/disease'
 import { Route as ApiPublicAiChatRouteImport } from './routes/api/public/ai/chat'
 import { Route as ApiPublicAiAdviseRouteImport } from './routes/api/public/ai/advise'
@@ -110,6 +111,11 @@ const AuthenticatedFieldsIdRoute = AuthenticatedFieldsIdRouteImport.update({
   path: '/fields/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicAiDiseaseScanRoute = ApiPublicAiDiseaseScanRouteImport.update({
+  id: '/api/public/ai/disease-scan',
+  path: '/api/public/ai/disease-scan',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicAiDiseaseRoute = ApiPublicAiDiseaseRouteImport.update({
   id: '/api/public/ai/disease',
   path: '/api/public/ai/disease',
@@ -145,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/api/public/ai/advise': typeof ApiPublicAiAdviseRoute
   '/api/public/ai/chat': typeof ApiPublicAiChatRoute
   '/api/public/ai/disease': typeof ApiPublicAiDiseaseRoute
+  '/api/public/ai/disease-scan': typeof ApiPublicAiDiseaseScanRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -165,6 +172,7 @@ export interface FileRoutesByTo {
   '/api/public/ai/advise': typeof ApiPublicAiAdviseRoute
   '/api/public/ai/chat': typeof ApiPublicAiChatRoute
   '/api/public/ai/disease': typeof ApiPublicAiDiseaseRoute
+  '/api/public/ai/disease-scan': typeof ApiPublicAiDiseaseScanRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -187,6 +195,7 @@ export interface FileRoutesById {
   '/api/public/ai/advise': typeof ApiPublicAiAdviseRoute
   '/api/public/ai/chat': typeof ApiPublicAiChatRoute
   '/api/public/ai/disease': typeof ApiPublicAiDiseaseRoute
+  '/api/public/ai/disease-scan': typeof ApiPublicAiDiseaseScanRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -209,6 +218,7 @@ export interface FileRouteTypes {
     | '/api/public/ai/advise'
     | '/api/public/ai/chat'
     | '/api/public/ai/disease'
+    | '/api/public/ai/disease-scan'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -229,6 +239,7 @@ export interface FileRouteTypes {
     | '/api/public/ai/advise'
     | '/api/public/ai/chat'
     | '/api/public/ai/disease'
+    | '/api/public/ai/disease-scan'
   id:
     | '__root__'
     | '/'
@@ -250,6 +261,7 @@ export interface FileRouteTypes {
     | '/api/public/ai/advise'
     | '/api/public/ai/chat'
     | '/api/public/ai/disease'
+    | '/api/public/ai/disease-scan'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -262,6 +274,7 @@ export interface RootRouteChildren {
   ApiPublicAiAdviseRoute: typeof ApiPublicAiAdviseRoute
   ApiPublicAiChatRoute: typeof ApiPublicAiChatRoute
   ApiPublicAiDiseaseRoute: typeof ApiPublicAiDiseaseRoute
+  ApiPublicAiDiseaseScanRoute: typeof ApiPublicAiDiseaseScanRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -378,6 +391,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFieldsIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/ai/disease-scan': {
+      id: '/api/public/ai/disease-scan'
+      path: '/api/public/ai/disease-scan'
+      fullPath: '/api/public/ai/disease-scan'
+      preLoaderRoute: typeof ApiPublicAiDiseaseScanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/ai/disease': {
       id: '/api/public/ai/disease'
       path: '/api/public/ai/disease'
@@ -441,6 +461,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicAiAdviseRoute: ApiPublicAiAdviseRoute,
   ApiPublicAiChatRoute: ApiPublicAiChatRoute,
   ApiPublicAiDiseaseRoute: ApiPublicAiDiseaseRoute,
+  ApiPublicAiDiseaseScanRoute: ApiPublicAiDiseaseScanRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
