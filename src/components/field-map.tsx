@@ -37,6 +37,11 @@ export function FieldMap({
   const [mode, setMode] = useState<"add" | "edit">("add");
   const modeRef = useRef(mode);
   useEffect(() => { modeRef.current = mode; }, [mode]);
+  // Vertex currently selected for precise nudging / deletion.
+  const [selected, setSelected] = useState<number | null>(null);
+  const selectedRef = useRef(selected);
+  useEffect(() => { selectedRef.current = selected; }, [selected]);
+  const [step, setStep] = useState(1); // nudge step in metres
   const [search, setSearch] = useState("");
   const liveMarkerRef = useRef<L.Marker | null>(null);
   const liveAccRef = useRef<L.Circle | null>(null);
@@ -126,15 +131,19 @@ export function FieldMap({
     markersRef.current = [];
 
     pts.forEach((p, i) => {
+      const isSel = selected === i;
+      const size = isSel ? 28 : 22;
+      const bg = isSel ? "#F9A825" : "#4CAF50";
       const icon = L.divIcon({
         className: "",
-        iconSize: [22, 22],
-        iconAnchor: [11, 11],
-        html: `<div style="width:22px;height:22px;border-radius:9999px;background:#4CAF50;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700">${i + 1}</div>`,
+        iconSize: [size, size],
+        iconAnchor: [size / 2, size / 2],
+        html: `<div style="width:${size}px;height:${size}px;border-radius:9999px;background:${bg};border:${isSel ? 3 : 2}px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700">${i + 1}</div>`,
       });
       const mk = L.marker([p[0], p[1]], { icon, draggable: !readOnly });
       mk.addTo(m);
       if (!readOnly) {
+        mk.on("dragstart", () => setSelected(i));
         mk.on("drag", (ev: L.LeafletEvent) => {
           const ll = (ev.target as L.Marker).getLatLng();
           // Live update without rebuilding markers (which would break the drag gesture).
@@ -148,13 +157,13 @@ export function FieldMap({
           const ll = (ev.target as L.Marker).getLatLng();
           commit(ptsRef.current.map((q, idx) => (idx === i ? [ll.lat, ll.lng] : q)));
         });
+        // Tapping selects the corner — deletion is an explicit action in the
+        // vertex panel so a stray tap can never destroy a boundary point.
         mk.on("click", (ev: L.LeafletMouseEvent) => {
           L.DomEvent.stopPropagation(ev);
-          if (modeRef.current === "edit") {
-            commit(ptsRef.current.filter((_, idx) => idx !== i));
-          }
+          setSelected((cur) => (cur === i ? null : i));
         });
-        mk.bindTooltip(modeRef.current === "edit" ? "Tap to delete • drag to move" : "Drag to move", { direction: "top", offset: [0, -8] });
+        mk.bindTooltip(`Corner ${i + 1} — drag to adjust, tap to select`, { direction: "top", offset: [0, -8] });
       }
       markersRef.current.push(mk);
     });
@@ -186,12 +195,52 @@ export function FieldMap({
           const next = [...cur];
           next.splice(bestIdx + 1, 0, [ev.latlng.lat, ev.latlng.lng]);
           commit(next);
+          setSelected(bestIdx + 1);
         });
       }
       layerRef.current = poly;
     }
     emitChange(pts);
-  }, [pts, mode, onChange, readOnly]);
+  }, [pts, mode, selected, onChange, readOnly]);
+
+  // Keep the selection valid when points are removed.
+  useEffect(() => {
+    if (selected !== null && selected >= pts.length) setSelected(null);
+  }, [pts.length, selected]);
+
+  /** Moves the selected corner by a precise metre offset (fine adjustment). */
+  function nudge(dNorthM: number, dEastM: number) {
+    const i = selectedRef.current;
+    if (i === null) return;
+    const cur = ptsRef.current;
+    const [lat, lng] = cur[i];
+    const nextLat = lat + dNorthM / 111320;
+    const nextLng = lng + dEastM / (111320 * Math.cos((lat * Math.PI) / 180) || 1);
+    commit(cur.map((q, idx) => (idx === i ? ([nextLat, nextLng] as [number, number]) : q)));
+  }
+
+  function deleteSelected() {
+    const i = selectedRef.current;
+    if (i === null) return;
+    commit(ptsRef.current.filter((_, idx) => idx !== i));
+    setSelected(null);
+  }
+
+  // Arrow-key nudging while a corner is selected.
+  useEffect(() => {
+    if (readOnly || selected === null) return;
+    function onKey(e: KeyboardEvent) {
+      const map: Record<string, [number, number]> = {
+        ArrowUp: [step, 0], ArrowDown: [-step, 0], ArrowLeft: [0, -step], ArrowRight: [0, step],
+      };
+      if (map[e.key]) { e.preventDefault(); nudge(...map[e.key]); }
+      else if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); deleteSelected(); }
+      else if (e.key === "Escape") setSelected(null);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected, step, readOnly]);
 
   async function locateSearch() {
     if (!search.trim()) return;
@@ -329,11 +378,59 @@ export function FieldMap({
         </div>
       )}
       <div ref={ref} className="w-full overflow-hidden rounded-2xl border border-border shadow-soft" style={{ height }} />
+      {!readOnly && selected !== null && pts[selected] && (
+        <div className="rounded-2xl border border-border bg-card p-3 space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-sm font-semibold">Corner {selected + 1} of {pts.length}</div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setSelected((s) => (s === null ? null : (s + 1) % pts.length))}
+                className="rounded-xl border border-border px-2.5 py-1 text-xs"
+              >Next ›</button>
+              <button type="button" onClick={() => setSelected(null)} className="rounded-xl border border-border px-2.5 py-1 text-xs">Done</button>
+            </div>
+          </div>
+          <div className="font-mono text-[11px] text-muted-foreground">
+            {pts[selected][0].toFixed(6)}, {pts[selected][1].toFixed(6)}
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="grid grid-cols-3 gap-1">
+              <span />
+              <button type="button" onClick={() => nudge(step, 0)} className="rounded-lg border border-border px-2.5 py-1 text-xs">↑</button>
+              <span />
+              <button type="button" onClick={() => nudge(0, -step)} className="rounded-lg border border-border px-2.5 py-1 text-xs">←</button>
+              <span className="grid place-items-center text-[10px] text-muted-foreground">{step}m</span>
+              <button type="button" onClick={() => nudge(0, step)} className="rounded-lg border border-border px-2.5 py-1 text-xs">→</button>
+              <span />
+              <button type="button" onClick={() => nudge(-step, 0)} className="rounded-lg border border-border px-2.5 py-1 text-xs">↓</button>
+              <span />
+            </div>
+            <div className="inline-flex overflow-hidden rounded-xl border border-border text-xs">
+              {[0.5, 1, 5].map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setStep(s)}
+                  className={`px-2.5 py-1 ${step === s ? "bg-primary text-primary-foreground" : "bg-background"}`}
+                >{s} m</button>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={deleteSelected}
+              className="ml-auto rounded-xl bg-destructive px-3 py-1.5 text-xs text-destructive-foreground"
+            >🗑 Delete corner</button>
+          </div>
+        </div>
+      )}
       {!readOnly && (
         <div className="text-xs text-muted-foreground">
-          {mode === "add"
-            ? "Tap map to add corners, or tap an edge to insert a vertex. Drag markers to fine-tune."
-            : "Tap a numbered marker to delete it, drag to reshape, or tap an edge to insert a vertex."}
+          {selected !== null
+            ? "Drag the highlighted corner, or use the arrows / keyboard arrow keys for metre-precise adjustment. Delete key removes it."
+            : mode === "add"
+              ? "Tap map to add corners, or tap an edge to insert a vertex. Drag markers to fine-tune."
+              : "Tap a corner to select it, drag to reshape, or tap an edge to insert a vertex."}
         </div>
       )}
     </div>
