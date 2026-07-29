@@ -6,6 +6,7 @@ import { AppShell } from "@/components/app-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { getWeather } from "@/lib/weather.functions";
 import { fetchWeatherClient } from "@/lib/weather-core";
+import { useAutoRefresh } from "@/hooks/use-auto-refresh";
 import { cacheGet, cacheSet } from "@/components/offline-banner";
 import { Cloud, CloudRain, Droplets, Wind, Sprout, Bug, TrendingUp, Landmark, Leaf, Sun } from "lucide-react";
 
