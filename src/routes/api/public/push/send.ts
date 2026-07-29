@@ -30,7 +30,20 @@ export const Route = createFileRoute("/api/public/push/send")({
 
           const parsed = Body.safeParse(await request.json());
           if (!parsed.success) return json({ error: "Invalid body" }, 400);
-          const { title, body, kind, save } = parsed.data;
+          const { title, body, kind, save, tz } = parsed.data;
+
+          // Honour the farmer's per-category switches and quiet hours.
+          const { data: prefRow } = await caller.supabase
+            .from("profiles")
+            .select(
+              "notify_weather, notify_recommendations, notify_disease, quiet_hours_enabled, quiet_start, quiet_end",
+            )
+            .eq("id", caller.userId)
+            .single();
+          const verdict = shouldDeliver(normalizePrefs(prefRow as any), kind, new Date(), tz);
+          if (!verdict.allowed) {
+            return json({ sent: 0, failed: 0, devices: 0, suppressed: verdict.reason });
+          }
 
           const { isPushConfigured, sendToDevices } = await import(
             "@/lib/fcm.server"
