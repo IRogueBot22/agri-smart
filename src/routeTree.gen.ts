@@ -25,6 +25,9 @@ import { Route as AuthenticatedAdvisorRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedFieldsIndexRouteImport } from './routes/_authenticated/fields.index'
 import { Route as AuthenticatedFieldsNewRouteImport } from './routes/_authenticated/fields.new'
 import { Route as AuthenticatedFieldsIdRouteImport } from './routes/_authenticated/fields.$id'
+import { Route as ApiPublicAiDiseaseRouteImport } from './routes/api/public/ai/disease'
+import { Route as ApiPublicAiChatRouteImport } from './routes/api/public/ai/chat'
+import { Route as ApiPublicAiAdviseRouteImport } from './routes/api/public/ai/advise'
 
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
@@ -107,6 +110,21 @@ const AuthenticatedFieldsIdRoute = AuthenticatedFieldsIdRouteImport.update({
   path: '/fields/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicAiDiseaseRoute = ApiPublicAiDiseaseRouteImport.update({
+  id: '/api/public/ai/disease',
+  path: '/api/public/ai/disease',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicAiChatRoute = ApiPublicAiChatRouteImport.update({
+  id: '/api/public/ai/chat',
+  path: '/api/public/ai/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicAiAdviseRoute = ApiPublicAiAdviseRouteImport.update({
+  id: '/api/public/ai/advise',
+  path: '/api/public/ai/advise',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -124,6 +142,9 @@ export interface FileRoutesByFullPath {
   '/fields/$id': typeof AuthenticatedFieldsIdRoute
   '/fields/new': typeof AuthenticatedFieldsNewRoute
   '/fields/': typeof AuthenticatedFieldsIndexRoute
+  '/api/public/ai/advise': typeof ApiPublicAiAdviseRoute
+  '/api/public/ai/chat': typeof ApiPublicAiChatRoute
+  '/api/public/ai/disease': typeof ApiPublicAiDiseaseRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -141,6 +162,9 @@ export interface FileRoutesByTo {
   '/fields/$id': typeof AuthenticatedFieldsIdRoute
   '/fields/new': typeof AuthenticatedFieldsNewRoute
   '/fields': typeof AuthenticatedFieldsIndexRoute
+  '/api/public/ai/advise': typeof ApiPublicAiAdviseRoute
+  '/api/public/ai/chat': typeof ApiPublicAiChatRoute
+  '/api/public/ai/disease': typeof ApiPublicAiDiseaseRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -160,6 +184,9 @@ export interface FileRoutesById {
   '/_authenticated/fields/$id': typeof AuthenticatedFieldsIdRoute
   '/_authenticated/fields/new': typeof AuthenticatedFieldsNewRoute
   '/_authenticated/fields/': typeof AuthenticatedFieldsIndexRoute
+  '/api/public/ai/advise': typeof ApiPublicAiAdviseRoute
+  '/api/public/ai/chat': typeof ApiPublicAiChatRoute
+  '/api/public/ai/disease': typeof ApiPublicAiDiseaseRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -179,6 +206,9 @@ export interface FileRouteTypes {
     | '/fields/$id'
     | '/fields/new'
     | '/fields/'
+    | '/api/public/ai/advise'
+    | '/api/public/ai/chat'
+    | '/api/public/ai/disease'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -196,6 +226,9 @@ export interface FileRouteTypes {
     | '/fields/$id'
     | '/fields/new'
     | '/fields'
+    | '/api/public/ai/advise'
+    | '/api/public/ai/chat'
+    | '/api/public/ai/disease'
   id:
     | '__root__'
     | '/'
@@ -214,6 +247,9 @@ export interface FileRouteTypes {
     | '/_authenticated/fields/$id'
     | '/_authenticated/fields/new'
     | '/_authenticated/fields/'
+    | '/api/public/ai/advise'
+    | '/api/public/ai/chat'
+    | '/api/public/ai/disease'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -223,6 +259,9 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   SchemesIdRoute: typeof SchemesIdRoute
   SchemesIndexRoute: typeof SchemesIndexRoute
+  ApiPublicAiAdviseRoute: typeof ApiPublicAiAdviseRoute
+  ApiPublicAiChatRoute: typeof ApiPublicAiChatRoute
+  ApiPublicAiDiseaseRoute: typeof ApiPublicAiDiseaseRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -339,6 +378,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFieldsIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/ai/disease': {
+      id: '/api/public/ai/disease'
+      path: '/api/public/ai/disease'
+      fullPath: '/api/public/ai/disease'
+      preLoaderRoute: typeof ApiPublicAiDiseaseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/ai/chat': {
+      id: '/api/public/ai/chat'
+      path: '/api/public/ai/chat'
+      fullPath: '/api/public/ai/chat'
+      preLoaderRoute: typeof ApiPublicAiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/ai/advise': {
+      id: '/api/public/ai/advise'
+      path: '/api/public/ai/advise'
+      fullPath: '/api/public/ai/advise'
+      preLoaderRoute: typeof ApiPublicAiAdviseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -378,7 +438,20 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   SchemesIdRoute: SchemesIdRoute,
   SchemesIndexRoute: SchemesIndexRoute,
+  ApiPublicAiAdviseRoute: ApiPublicAiAdviseRoute,
+  ApiPublicAiChatRoute: ApiPublicAiChatRoute,
+  ApiPublicAiDiseaseRoute: ApiPublicAiDiseaseRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
