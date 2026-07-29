@@ -22,6 +22,14 @@ class _FieldsScreenState extends State<FieldsScreen> {
 
   void _reload() => setState(() => _future = DbService.fields());
 
+  Future<void> _openDraw({Map<String, dynamic>? field}) async {
+    final saved = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (_) => FieldDrawScreen(field: field)),
+    );
+    if (saved == true) _reload();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,11 +38,7 @@ class _FieldsScreenState extends State<FieldsScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add_location_alt_outlined),
-            onPressed: () async {
-              final saved = await Navigator.push<bool>(context,
-                  MaterialPageRoute(builder: (_) => const FieldDrawScreen()));
-              if (saved == true) _reload();
-            },
+            onPressed: () => _openDraw(),
           ),
         ],
       ),
@@ -55,13 +59,7 @@ class _FieldsScreenState extends State<FieldsScreen> {
                   const Text('No fields yet'),
                   const SizedBox(height: 12),
                   FilledButton(
-                    onPressed: () async {
-                      final saved = await Navigator.push<bool>(
-                          context,
-                          MaterialPageRoute(
-                              builder: (_) => const FieldDrawScreen()));
-                      if (saved == true) _reload();
-                    },
+                    onPressed: () => _openDraw(),
                     child: const Text('Draw your first field'),
                   ),
                 ],
@@ -81,12 +79,23 @@ class _FieldsScreenState extends State<FieldsScreen> {
                   subtitle: Text(
                       '${(f['area_acres'] as num).toStringAsFixed(2)} acres · '
                       '${f['soil_type'] ?? 'soil n/a'} · ${f['water_source'] ?? 'water n/a'}'),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete_outline),
-                    onPressed: () async {
-                      await DbService.deleteField(f['id'] as String);
-                      _reload();
-                    },
+                  onTap: () => _openDraw(field: f),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        tooltip: 'Edit boundary',
+                        icon: const Icon(Icons.edit_location_alt_outlined),
+                        onPressed: () => _openDraw(field: f),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline),
+                        onPressed: () async {
+                          await DbService.deleteField(f['id'] as String);
+                          _reload();
+                        },
+                      ),
+                    ],
                   ),
                 ),
               );

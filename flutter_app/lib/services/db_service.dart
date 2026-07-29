@@ -71,6 +71,37 @@ class DbService {
     return row;
   }
 
+  static Future<Map<String, dynamic>> updateField({
+    required String id,
+    String? name,
+    double? areaAcres,
+    double? centroidLat,
+    double? centroidLng,
+    List<List<double>>? polygon,
+    String? crop,
+    String? soilType,
+    String? waterSource,
+  }) async {
+    final patch = <String, dynamic>{
+      if (name != null) 'name': name,
+      if (areaAcres != null) 'area_acres': areaAcres,
+      if (centroidLat != null) 'centroid_lat': centroidLat,
+      if (centroidLng != null) 'centroid_lng': centroidLng,
+      if (polygon != null) 'polygon': polygon,
+      if (crop != null) 'crop': crop,
+      if (soilType != null) 'soil_type': soilType,
+      if (waterSource != null) 'water_source': waterSource,
+    };
+    final row = await client
+        .from('fields')
+        .update(patch)
+        .eq('id', id)
+        .eq('user_id', uid)
+        .select()
+        .single();
+    return row;
+  }
+
   static Future<void> deleteField(String id) async =>
       await client.from('fields').delete().eq('id', id);
 
@@ -99,6 +130,21 @@ class DbService {
         'title': title,
         'body': body,
       });
+
+  // ---------- Push devices ----------
+  static Future<void> saveDeviceToken({
+    required String token,
+    required String platform,
+  }) async =>
+      await client.from('device_tokens').upsert({
+        'user_id': uid,
+        'token': token,
+        'platform': platform,
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
+      }, onConflict: 'token');
+
+  static Future<void> deleteDeviceToken(String token) async =>
+      await client.from('device_tokens').delete().eq('token', token);
 
   // ---------- Disease scans ----------
   static Future<String> uploadLeafScan(String fileName, Uint8List bytes) async {

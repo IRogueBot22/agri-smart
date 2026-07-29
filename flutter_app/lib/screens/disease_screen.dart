@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../services/ai_service.dart';
+import '../services/media_service.dart';
 import '../theme.dart';
 
 class DiseaseScreen extends StatefulWidget {
@@ -28,15 +29,22 @@ class _DiseaseScreenState extends State<DiseaseScreen> {
     super.dispose();
   }
 
-  Future<void> _pick(ImageSource source) async {
-    final picked = await ImagePicker()
-        .pickImage(source: source, imageQuality: 85, maxWidth: 1600);
-    if (picked == null) return;
-    setState(() {
-      _image = File(picked.path);
-      _result = null;
-      _error = null;
-    });
+  Future<void> _pick(ImageSource? source) async {
+    try {
+      final file = source == null
+          ? await MediaService.pickWithSheet(context)
+          : await MediaService.capture(source: source);
+      if (file == null || !mounted) return;
+      setState(() {
+        _image = file;
+        _result = null;
+        _error = null;
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
+      }
+    }
   }
 
   Future<void> _analyze() async {

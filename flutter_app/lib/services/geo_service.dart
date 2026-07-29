@@ -47,6 +47,21 @@ class GeoService {
     return LatLng(lat, lng);
   }
 
+  /// Square boundary of [acres] centred on [center] — used for
+  /// "create a field at my current GPS position".
+  static List<LatLng> squareAround(LatLng center, double acres) {
+    final side = math.sqrt(acres * 4046.8564224); // metres
+    final half = side / 2;
+    final dLat = (half / _earthRadius) * 180 / math.pi;
+    final dLng = dLat / math.cos(_rad(center.latitude));
+    return [
+      LatLng(center.latitude + dLat, center.longitude - dLng),
+      LatLng(center.latitude + dLat, center.longitude + dLng),
+      LatLng(center.latitude - dLat, center.longitude + dLng),
+      LatLng(center.latitude - dLat, center.longitude - dLng),
+    ];
+  }
+
   /// Index at which to insert a new vertex for a tap near an edge.
   static int nearestEdgeIndex(List<LatLng> pts, LatLng tap) {
     var best = 0;
