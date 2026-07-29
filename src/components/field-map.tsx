@@ -37,6 +37,11 @@ export function FieldMap({
   const [mode, setMode] = useState<"add" | "edit">("add");
   const modeRef = useRef(mode);
   useEffect(() => { modeRef.current = mode; }, [mode]);
+  // Vertex currently selected for precise nudging / deletion.
+  const [selected, setSelected] = useState<number | null>(null);
+  const selectedRef = useRef(selected);
+  useEffect(() => { selectedRef.current = selected; }, [selected]);
+  const [step, setStep] = useState(1); // nudge step in metres
   const [search, setSearch] = useState("");
   const liveMarkerRef = useRef<L.Marker | null>(null);
   const liveAccRef = useRef<L.Circle | null>(null);
