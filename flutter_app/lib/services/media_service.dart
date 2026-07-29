@@ -25,6 +25,24 @@ class MediaService {
     }
   }
 
+  /// Multi-select from the gallery (several leaf photos of the same problem).
+  static Future<List<File>> captureMultiple({
+    int quality = 85,
+    double maxWidth = 1600,
+    int limit = 5,
+  }) async {
+    try {
+      final picked = await _picker.pickMultiImage(
+        imageQuality: quality,
+        maxWidth: maxWidth,
+        limit: limit,
+      );
+      return picked.take(limit).map((x) => File(x.path)).toList();
+    } on Exception catch (e) {
+      throw Exception(_friendly(e));
+    }
+  }
+
   /// Bottom sheet letting the farmer choose camera or gallery.
   static Future<File?> pickWithSheet(BuildContext context) async {
     final source = await showModalBottomSheet<ImageSource>(
