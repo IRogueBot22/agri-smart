@@ -195,12 +195,52 @@ export function FieldMap({
           const next = [...cur];
           next.splice(bestIdx + 1, 0, [ev.latlng.lat, ev.latlng.lng]);
           commit(next);
+          setSelected(bestIdx + 1);
         });
       }
       layerRef.current = poly;
     }
     emitChange(pts);
-  }, [pts, mode, onChange, readOnly]);
+  }, [pts, mode, selected, onChange, readOnly]);
+
+  // Keep the selection valid when points are removed.
+  useEffect(() => {
+    if (selected !== null && selected >= pts.length) setSelected(null);
+  }, [pts.length, selected]);
+
+  /** Moves the selected corner by a precise metre offset (fine adjustment). */
+  function nudge(dNorthM: number, dEastM: number) {
+    const i = selectedRef.current;
+    if (i === null) return;
+    const cur = ptsRef.current;
+    const [lat, lng] = cur[i];
+    const nextLat = lat + dNorthM / 111320;
+    const nextLng = lng + dEastM / (111320 * Math.cos((lat * Math.PI) / 180) || 1);
+    commit(cur.map((q, idx) => (idx === i ? ([nextLat, nextLng] as [number, number]) : q)));
+  }
+
+  function deleteSelected() {
+    const i = selectedRef.current;
+    if (i === null) return;
+    commit(ptsRef.current.filter((_, idx) => idx !== i));
+    setSelected(null);
+  }
+
+  // Arrow-key nudging while a corner is selected.
+  useEffect(() => {
+    if (readOnly || selected === null) return;
+    function onKey(e: KeyboardEvent) {
+      const map: Record<string, [number, number]> = {
+        ArrowUp: [step, 0], ArrowDown: [-step, 0], ArrowLeft: [0, -step], ArrowRight: [0, step],
+      };
+      if (map[e.key]) { e.preventDefault(); nudge(...map[e.key]); }
+      else if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); deleteSelected(); }
+      else if (e.key === "Escape") setSelected(null);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected, step, readOnly]);
 
   async function locateSearch() {
     if (!search.trim()) return;
