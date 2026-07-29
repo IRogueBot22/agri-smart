@@ -1,9 +1,14 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:http/http.dart' as http;
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../config.dart';
 
 import 'db_service.dart';
 
@@ -137,5 +142,28 @@ class PushService {
       ),
       payload: m.data['kind']?.toString(),
     );
+  }
+
+  /// Asks the backend to push an alert to this farmer's devices
+  /// (also stored in the in-app alerts list).
+  static Future<Map<String, dynamic>> sendAlert({
+    required String title,
+    required String body,
+    String kind = 'info',
+  }) async {
+    final token = Supabase.instance.client.auth.currentSession?.accessToken;
+    final res = await http.post(
+      Uri.parse('${AppConfig.apiBaseUrl}/api/public/push/send'),
+      headers: {
+        'Content-Type': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({'title': title, 'body': body, 'kind': kind}),
+    );
+    final decoded = jsonDecode(res.body) as Map<String, dynamic>;
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      throw Exception(decoded['error']?.toString() ?? 'Push failed');
+    }
+    return decoded;
   }
 }
