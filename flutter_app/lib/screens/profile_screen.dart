@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../main.dart';
 import '../services/db_service.dart';
+import '../services/push_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -99,6 +100,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   leading: const Icon(Icons.logout),
                   title: const Text('Sign out'),
                   onTap: () async {
+                    await PushService.unregister();
                     await DbService.signOut();
                     if (context.mounted) {
                       Navigator.pushNamedAndRemoveUntil(
