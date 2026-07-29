@@ -47,26 +47,47 @@ class AiService {
         'weather': weather,
       });
 
-  /// Full leaf-scan flow: uploads the photo to the backend, which stores it,
+  static MediaType _mimeOf(File image) {
+    final ext = image.path.split('.').last.toLowerCase();
+    return switch (ext) {
+      'png' => MediaType('image', 'png'),
+      'webp' => MediaType('image', 'webp'),
+      'heic' => MediaType('image', 'heic'),
+      _ => MediaType('image', 'jpeg'),
+    };
+  }
+
+  /// Full leaf-scan flow: uploads one photo to the backend, which stores it,
   /// runs the Python TensorFlow CNN and returns a structured diagnosis.
   static Future<Map<String, dynamic>> scanLeaf({
     required File image,
     String? crop,
     String? fieldId,
     void Function(double progress)? onProgress,
+  }) =>
+      scanLeaves(
+        images: [image],
+        crop: crop,
+        fieldId: fieldId,
+        onProgress: onProgress,
+      );
+
+  /// Multi-photo leaf scan (max 5). Every image is analyzed and the backend
+  /// returns a combined verdict plus a `ranked` list of candidate diseases
+  /// and the per-image results in `images`.
+  static Future<Map<String, dynamic>> scanLeaves({
+    required List<File> images,
+    String? crop,
+    String? fieldId,
+    void Function(double progress)? onProgress,
   }) async {
+    if (images.isEmpty) throw Exception('Select at least one leaf photo.');
+    if (images.length > 5) throw Exception('You can scan up to 5 photos at once.');
+
     final token = Supabase.instance.client.auth.currentSession?.accessToken;
     if (token == null) {
       throw Exception('You must be signed in to scan a leaf.');
     }
-
-    final ext = image.path.split('.').last.toLowerCase();
-    final mime = switch (ext) {
-      'png' => MediaType('image', 'png'),
-      'webp' => MediaType('image', 'webp'),
-      'heic' => MediaType('image', 'heic'),
-      _ => MediaType('image', 'jpeg'),
-    };
 
     onProgress?.call(0.1);
     final req = http.MultipartRequest(
@@ -75,15 +96,20 @@ class AiService {
     )
       ..headers['Authorization'] = 'Bearer $token'
       ..fields['crop'] = crop ?? ''
-      ..fields['fieldId'] = fieldId ?? ''
-      ..files.add(await http.MultipartFile.fromPath(
+      ..fields['fieldId'] = fieldId ?? '';
+
+    for (final image in images) {
+      req.files.add(await http.MultipartFile.fromPath(
         'file',
         image.path,
-        contentType: mime,
+        contentType: _mimeOf(image),
       ));
+    }
 
     onProgress?.call(0.35);
-    final streamed = await req.send().timeout(const Duration(seconds: 90));
+    final streamed = await req.send().timeout(
+          Duration(seconds: 60 + 30 * images.length),
+        );
     onProgress?.call(0.8);
     final res = await http.Response.fromStream(streamed);
     onProgress?.call(1);
@@ -100,6 +126,7 @@ class AiService {
     }
     return decoded;
   }
+
 
   /// Vision diagnosis for a leaf photo already uploaded to storage.
   static Future<Map<String, dynamic>> detectDisease({
