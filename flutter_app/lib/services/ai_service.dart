@@ -39,7 +39,7 @@ class AiService {
     required Map<String, dynamic> field,
     Map<String, dynamic>? weather,
   }) =>
-      _post('/api/ai/advise', {
+      _post('/api/public/ai/advise', {
         'kind': kind,
         'field': field,
         'weather': weather,
@@ -50,11 +50,11 @@ class AiService {
     required String imageUrl,
     String? crop,
   }) =>
-      _post('/api/ai/disease', {'imageUrl': imageUrl, 'crop': crop});
+      _post('/api/public/ai/disease', {'imageUrl': imageUrl, 'crop': crop});
 
   static Future<String> chat(String message,
       {List<Map<String, String>> history = const []}) async {
-    final r = await _post('/api/ai/chat', {
+    final r = await _post('/api/public/ai/chat', {
       'message': message,
       'history': history,
     });

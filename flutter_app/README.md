@@ -101,7 +101,7 @@ deployed web app's server functions, which hold the credentials server-side.
 
 ## 7. Remaining backend step
 
-`lib/services/ai_service.dart` posts to `/api/ai/advise`, `/api/ai/disease` and
+`lib/services/ai_service.dart` posts to `/api/public/ai/advise`, `/api/public/ai/disease` and
 `/api/ai/chat` on the deployed web app. Those HTTP routes don't exist yet — the
 web app currently exposes the same logic as internal server functions
 (`src/lib/advisor.functions.ts`). Ask me to add the matching
