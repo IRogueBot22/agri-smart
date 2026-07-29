@@ -6,6 +6,7 @@ import { AppShell } from "@/components/app-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getWeather } from "@/lib/weather.functions";
+import { fetchWeatherClient } from "@/lib/weather-core";
 import {
   Cloud, CloudRain, Sun, Wind, Droplets, Gauge, Sunrise, Sunset,
   MapPin, RefreshCw, Thermometer, Eye, Compass,
@@ -41,7 +42,13 @@ function WeatherView() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetchWeather({ data: { lat, lng } });
+      let res: any;
+      try {
+        res = await fetchWeather({ data: { lat, lng } });
+      } catch {
+        // Fallback: fetch directly from the browser if the server call fails
+        res = await fetchWeatherClient(lat, lng);
+      }
       setW(res);
       setCoords({ lat, lng, source });
     } catch (e: any) {

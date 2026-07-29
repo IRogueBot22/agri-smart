@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/app-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { getWeather } from "@/lib/weather.functions";
+import { fetchWeatherClient } from "@/lib/weather-core";
 import { cacheGet, cacheSet } from "@/components/offline-banner";
 import { Cloud, CloudRain, Droplets, Wind, Sprout, Bug, TrendingUp, Landmark, Leaf, Sun } from "lucide-react";
 
@@ -31,7 +32,12 @@ function Home() {
     const lat = f?.centroid_lat ?? 17.385;
     const lng = f?.centroid_lng ?? 78.4867;
     try {
-      const w = await fetchWeather({ data: { lat, lng } });
+      let w: any;
+      try {
+        w = await fetchWeather({ data: { lat, lng } });
+      } catch {
+        w = await fetchWeatherClient(lat, lng);
+      }
       setWeather(w);
       cacheSet("home-weather", w);
     } catch (e) { console.error(e); }
