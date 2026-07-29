@@ -71,9 +71,9 @@ class AiService {
     onProgress?.call(0.1);
     final req = http.MultipartRequest(
       'POST',
-      Uri.parse('\${AppConfig.apiBaseUrl}/api/public/ai/disease-scan'),
+      Uri.parse('${AppConfig.apiBaseUrl}/api/public/ai/disease-scan'),
     )
-      ..headers['Authorization'] = 'Bearer \$token'
+      ..headers['Authorization'] = 'Bearer $token'
       ..fields['crop'] = crop ?? ''
       ..fields['fieldId'] = fieldId ?? ''
       ..files.add(await http.MultipartFile.fromPath(
@@ -92,11 +92,11 @@ class AiService {
     try {
       decoded = jsonDecode(res.body) as Map<String, dynamic>;
     } catch (_) {
-      throw Exception('Scan failed [\${res.statusCode}]: \${res.body}');
+      throw Exception('Scan failed [${res.statusCode}]: ${res.body}');
     }
     if (res.statusCode < 200 || res.statusCode >= 300) {
       throw Exception(decoded['error']?.toString() ??
-          'Scan failed [\${res.statusCode}]');
+          'Scan failed [${res.statusCode}]');
     }
     return decoded;
   }
