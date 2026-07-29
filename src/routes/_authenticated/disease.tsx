@@ -29,6 +29,7 @@ function Disease() {
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [stage, setStage] = useState<string>("");
+  const [historyKey, setHistoryKey] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
   const camRef = useRef<HTMLInputElement>(null);
   const run = useServerFn(detectDisease);
