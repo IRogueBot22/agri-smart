@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { detectDisease } from "@/lib/advisor.functions";
 import { combineDiagnoses, rankDiagnoses, type RankedDisease } from "@/lib/rank-diagnoses";
 import { supabase } from "@/integrations/supabase/client";
+import { ScanHistory } from "@/components/scan-history";
 import { Camera, Upload, Bug, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 
@@ -28,6 +29,7 @@ function Disease() {
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [stage, setStage] = useState<string>("");
+  const [historyKey, setHistoryKey] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
   const camRef = useRef<HTMLInputElement>(null);
   const run = useServerFn(detectDisease);
@@ -94,6 +96,7 @@ function Disease() {
       setRanked(rankDiagnoses(ok));
       setResult(combineDiagnoses(ok));
       setStage("");
+      setHistoryKey((k) => k + 1);
       const failed = settled.length - ok.length;
       toast.success(`Diagnosis complete${failed ? ` (${failed} photo${failed > 1 ? "s" : ""} failed)` : ""}`);
     } catch (e: any) {
@@ -225,6 +228,8 @@ function Disease() {
             ))}
           </CardContent></Card>
         )}
+
+        <ScanHistory refreshKey={historyKey} />
       </div>
     </AppShell>
   );
