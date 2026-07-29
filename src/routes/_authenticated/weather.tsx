@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getWeather } from "@/lib/weather.functions";
 import { fetchWeatherClient } from "@/lib/weather-core";
+import { useAutoRefresh } from "@/hooks/use-auto-refresh";
 import {
   Cloud, CloudRain, Sun, Wind, Droplets, Gauge, Sunrise, Sunset,
   MapPin, RefreshCw, Thermometer, Eye, Compass,
