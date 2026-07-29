@@ -61,6 +61,21 @@ Android — `android/app/src/main/AndroidManifest.xml`:
 <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 <uses-permission android:name="android.permission.CAMERA"/>
 <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+<!-- Background field tracking (keeps the map centred while you use other apps) -->
+<uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
+<uses-permission android:name="android.permission.WAKE_LOCK"/>
+```
+
+Inside `<application>` (required by Android 14+ for the tracking service):
+
+```xml
+<service
+    android:name="com.baseflow.geolocator.GeolocatorLocationService"
+    android:enabled="true"
+    android:exported="false"
+    android:foregroundServiceType="location" />
 ```
 
 iOS — `ios/Runner/Info.plist`:
@@ -69,7 +84,21 @@ iOS — `ios/Runner/Info.plist`:
 <key>NSCameraUsageDescription</key><string>Photograph crop leaves for disease detection.</string>
 <key>NSPhotoLibraryUsageDescription</key><string>Select leaf photos for disease detection.</string>
 <key>NSLocationWhenInUseUsageDescription</key><string>Map your fields and give live weather advisories.</string>
+<key>NSLocationAlwaysAndWhenInUseUsageDescription</key><string>Keeps the field map centred on you while you walk the boundary, even when AgriSmart is in the background.</string>
+<key>UIBackgroundModes</key>
+<array><string>location</string><string>remote-notification</string></array>
 ```
+
+### Background location tracking
+
+The map screen has a location-pin action in the app bar that turns on
+background tracking. It asks for the "Allow all the time" (Android) /
+"Always" (iOS) upgrade, then keeps the GPS stream alive through a foreground
+service on Android (with an ongoing "AgriSmart is tracking your field walk"
+notification, as the OS requires) and `allowBackgroundLocationUpdates` on
+iOS. Every fix is cached, so reopening the map recentres on your real
+position instead of the last place you left it. Tap the icon again to stop
+tracking and drop back to foreground-only updates.
 
 ## 5. Build
 
