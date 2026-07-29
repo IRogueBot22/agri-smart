@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchPrefs, cachedPrefs } from "@/hooks/use-notify-prefs";
+import { shouldDeliver } from "@/lib/notify-prefs";
 
 type Severity = "low" | "medium" | "high";
 type Alert = { code: string; title: string; body: string; severity: Severity };
