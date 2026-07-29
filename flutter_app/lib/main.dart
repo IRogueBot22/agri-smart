@@ -1,3 +1,5 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -7,6 +9,8 @@ import 'screens/splash_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/auth_screen.dart';
 import 'screens/shell_screen.dart';
+import 'screens/notifications_screen.dart';
+import 'services/push_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,8 +22,23 @@ Future<void> main() async {
     );
   }
 
+  if (AppConfig.enablePush) {
+    try {
+      await Firebase.initializeApp();
+      await PushService.init(
+        onOpened: (_) => navigatorKey.currentState?.push(
+          MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+        ),
+      );
+    } catch (e) {
+      debugPrint('[push] disabled: $e');
+    }
+  }
+
   runApp(const AgriSmartApp());
 }
+
+final navigatorKey = GlobalKey<NavigatorState>();
 
 class AgriSmartApp extends StatefulWidget {
   const AgriSmartApp({super.key});
@@ -40,6 +59,7 @@ class _AgriSmartAppState extends State<AgriSmartApp> {
       setMode: setThemeMode,
       child: MaterialApp(
         title: 'AgriSmart AI',
+        navigatorKey: navigatorKey,
         debugShowCheckedModeBanner: false,
         theme: buildTheme(Brightness.light),
         darkTheme: buildTheme(Brightness.dark),

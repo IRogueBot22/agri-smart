@@ -11,6 +11,9 @@ class AppConfig {
 
   static const googleMapsApiKey = String.fromEnvironment('GOOGLE_MAPS_API_KEY');
 
+  /// Set to false to run without Firebase (push notifications disabled).
+  static const enablePush = bool.fromEnvironment('ENABLE_PUSH', defaultValue: true);
+
   static bool get isConfigured =>
       supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
 }
