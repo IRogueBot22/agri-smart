@@ -228,6 +228,8 @@ function Disease() {
             ))}
           </CardContent></Card>
         )}
+
+        <ScanHistory refreshKey={historyKey} />
       </div>
     </AppShell>
   );
