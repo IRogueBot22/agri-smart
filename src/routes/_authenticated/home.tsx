@@ -31,7 +31,12 @@ function Home() {
     const lat = f?.centroid_lat ?? 17.385;
     const lng = f?.centroid_lng ?? 78.4867;
     try {
-      const w = await fetchWeather({ data: { lat, lng } });
+      let w: any;
+      try {
+        w = await fetchWeather({ data: { lat, lng } });
+      } catch {
+        w = await fetchWeatherClient(lat, lng);
+      }
       setWeather(w);
       cacheSet("home-weather", w);
     } catch (e) { console.error(e); }
