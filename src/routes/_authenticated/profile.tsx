@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { NotificationSettings } from "@/components/notification-settings";
 import { LogOut, User } from "lucide-react";
 import { toast } from "sonner";
 
