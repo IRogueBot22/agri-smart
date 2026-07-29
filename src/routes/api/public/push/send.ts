@@ -2,12 +2,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { authenticateRequest } from "@/lib/api-auth.server";
 import { json, preflight } from "@/lib/api-cors";
+import { normalizePrefs, shouldDeliver } from "@/lib/notify-prefs";
 
 const Body = z.object({
   title: z.string().min(1).max(120),
   body: z.string().min(1).max(500),
-  kind: z.enum(["weather", "advisory", "info"]).default("info"),
+  kind: z.enum(["weather", "advisory", "disease", "info"]).default("info"),
   save: z.boolean().default(true),
+  /** IANA timezone of the device, used to evaluate quiet hours. */
+  tz: z.string().max(64).optional(),
 });
 
 /**
@@ -28,7 +31,20 @@ export const Route = createFileRoute("/api/public/push/send")({
 
           const parsed = Body.safeParse(await request.json());
           if (!parsed.success) return json({ error: "Invalid body" }, 400);
-          const { title, body, kind, save } = parsed.data;
+          const { title, body, kind, save, tz } = parsed.data;
+
+          // Honour the farmer's per-category switches and quiet hours.
+          const { data: prefRow } = await caller.supabase
+            .from("profiles")
+            .select(
+              "notify_weather, notify_recommendations, notify_disease, quiet_hours_enabled, quiet_start, quiet_end",
+            )
+            .eq("id", caller.userId)
+            .single();
+          const verdict = shouldDeliver(normalizePrefs(prefRow as any), kind, new Date(), tz);
+          if (!verdict.allowed) {
+            return json({ sent: 0, failed: 0, devices: 0, suppressed: verdict.reason });
+          }
 
           const { isPushConfigured, sendToDevices } = await import(
             "@/lib/fcm.server"

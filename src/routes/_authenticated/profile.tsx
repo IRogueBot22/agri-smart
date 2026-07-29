@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { NotificationSettings } from "@/components/notification-settings";
 import { LogOut, User } from "lucide-react";
 import { toast } from "sonner";
 
@@ -82,6 +83,8 @@ function Profile() {
           </div>
           <Button onClick={save} className="w-full bg-gradient-primary shadow-soft">Save changes</Button>
         </CardContent></Card>
+
+        <NotificationSettings />
 
         <Card className="shadow-soft"><CardContent className="flex items-center justify-between p-4">
           <div><div className="font-medium">Dark mode</div><div className="text-xs text-muted-foreground">Reduce brightness at night</div></div>
