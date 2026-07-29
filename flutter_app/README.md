@@ -98,3 +98,12 @@ flutter build ios --release   # iOS (then archive in Xcode)
 
 AI keys never ship in the app: `lib/services/ai_service.dart` posts to the
 deployed web app's server functions, which hold the credentials server-side.
+
+## 7. Remaining backend step
+
+`lib/services/ai_service.dart` posts to `/api/ai/advise`, `/api/ai/disease` and
+`/api/ai/chat` on the deployed web app. Those HTTP routes don't exist yet — the
+web app currently exposes the same logic as internal server functions
+(`src/lib/advisor.functions.ts`). Ask me to add the matching
+`src/routes/api/ai/*.ts` handlers (bearer-token verified) and the Flutter AI
+screens will work end-to-end.
