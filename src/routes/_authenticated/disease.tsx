@@ -96,6 +96,7 @@ function Disease() {
       setRanked(rankDiagnoses(ok));
       setResult(combineDiagnoses(ok));
       setStage("");
+      setHistoryKey((k) => k + 1);
       const failed = settled.length - ok.length;
       toast.success(`Diagnosis complete${failed ? ` (${failed} photo${failed > 1 ? "s" : ""} failed)` : ""}`);
     } catch (e: any) {
