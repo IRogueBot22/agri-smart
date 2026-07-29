@@ -6,8 +6,10 @@ import { json, preflight } from "@/lib/api-cors";
 const Body = z.object({
   title: z.string().min(1).max(120),
   body: z.string().min(1).max(500),
-  kind: z.enum(["weather", "advisory", "info"]).default("info"),
+  kind: z.enum(["weather", "advisory", "disease", "info"]).default("info"),
   save: z.boolean().default(true),
+  /** IANA timezone of the device, used to evaluate quiet hours. */
+  tz: z.string().max(64).optional(),
 });
 
 /**
