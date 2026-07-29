@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { authenticateRequest } from "@/lib/api-auth.server";
 import { json, preflight } from "@/lib/api-cors";
+import { normalizePrefs, shouldDeliver } from "@/lib/notify-prefs";
 
 const Body = z.object({
   title: z.string().min(1).max(120),
