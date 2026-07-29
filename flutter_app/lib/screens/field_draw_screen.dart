@@ -33,6 +33,7 @@ class _FieldDrawScreenState extends State<FieldDrawScreen> {
   Position? _position;
   StreamSubscription<Position>? _watch;
   bool _follow = true;
+  bool _background = false;
   bool _locating = true;
   bool _saving = false;
 
@@ -42,6 +43,7 @@ class _FieldDrawScreenState extends State<FieldDrawScreen> {
   void initState() {
     super.initState();
     _loadExisting();
+    _restoreLastKnown();
     _startGps();
   }
 
@@ -49,6 +51,16 @@ class _FieldDrawScreenState extends State<FieldDrawScreen> {
   void dispose() {
     _watch?.cancel();
     super.dispose();
+  }
+
+  /// Centres on the last cached fix immediately (including one captured while
+  /// the app was in the background) so the map never opens on a stale place.
+  Future<void> _restoreLastKnown() async {
+    if (_isEdit && _points.isNotEmpty) return;
+    final last = await GeoService.lastKnown();
+    if (last == null || !mounted || _position != null) return;
+    setState(() => _initial = last);
+    _moveCamera(last, 17);
   }
 
   void _loadExisting() {
@@ -84,11 +96,43 @@ class _FieldDrawScreenState extends State<FieldDrawScreen> {
       _moveCamera(here, 18);
     }
 
-    _watch = GeoService.watch().listen((pos) {
+    _listen();
+  }
+
+  void _listen() {
+    _watch?.cancel();
+    final stream =
+        _background ? GeoService.watchBackground() : GeoService.watch();
+    _watch = stream.listen((pos) {
+      GeoService.cacheLast(pos);
       if (!mounted) return;
       setState(() => _position = pos);
       if (_follow) _moveCamera(LatLng(pos.latitude, pos.longitude), null);
     });
+  }
+
+  /// Keeps the GPS stream alive while the farmer switches to another app, so
+  /// the map is already centred on their real position when they come back.
+  Future<void> _toggleBackground() async {
+    if (_background) {
+      setState(() => _background = false);
+      _listen();
+      _toast('Background tracking off.');
+      return;
+    }
+    final granted = await GeoService.requestAlwaysPermission();
+    if (!mounted) return;
+    if (!granted) {
+      _toast('Allow location "All the time" in system settings to keep '
+          'tracking while you use other apps.');
+      return;
+    }
+    setState(() {
+      _background = true;
+      _follow = true;
+    });
+    _listen();
+    _toast('Background tracking on — the map stays centred on you.');
   }
 
   void _moveCamera(LatLng target, double? zoom) {
@@ -262,6 +306,14 @@ class _FieldDrawScreenState extends State<FieldDrawScreen> {
               icon: Icon(_follow
                   ? Icons.gps_fixed
                   : Icons.gps_not_fixed)),
+          IconButton(
+              tooltip: _background
+                  ? 'Background tracking on'
+                  : 'Track in background',
+              onPressed: _toggleBackground,
+              icon: Icon(_background
+                  ? Icons.location_on
+                  : Icons.location_searching)),
           IconButton(
               onPressed: _past.isEmpty ? null : _undo,
               icon: const Icon(Icons.undo)),
