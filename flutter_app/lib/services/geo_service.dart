@@ -1,9 +1,14 @@
+import 'dart:io' show Platform;
 import 'dart:math' as math;
 
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class GeoService {
+  static const _kLastLat = 'last_lat';
+  static const _kLastLng = 'last_lng';
+
   static Future<Position?> current() async {
     if (!await Geolocator.isLocationServiceEnabled()) return null;
     var p = await Geolocator.checkPermission();
@@ -12,17 +17,97 @@ class GeoService {
         p == LocationPermission.deniedForever) {
       return null;
     }
-    return Geolocator.getCurrentPosition(
+    final pos = await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
     );
+    await cacheLast(pos);
+    return pos;
   }
 
+  /// Asks for the "Allow all the time" / "Always" permission needed to keep
+  /// receiving fixes while the farmer is in another app or the screen is off.
+  /// Android requires foreground permission to be granted first.
+  static Future<bool> requestAlwaysPermission() async {
+    if (!await Geolocator.isLocationServiceEnabled()) return false;
+    var p = await Geolocator.checkPermission();
+    if (p == LocationPermission.denied) p = await Geolocator.requestPermission();
+    if (p == LocationPermission.denied ||
+        p == LocationPermission.deniedForever) {
+      return false;
+    }
+    if (p == LocationPermission.whileInUse) {
+      // Second prompt: Android 10+ / iOS upgrade to background access.
+      p = await Geolocator.requestPermission();
+    }
+    return p == LocationPermission.always;
+  }
+
+  static Future<bool> hasAlwaysPermission() async =>
+      await Geolocator.checkPermission() == LocationPermission.always;
+
+  /// Foreground-only position stream (stops when the app is backgrounded).
   static Stream<Position> watch() => Geolocator.getPositionStream(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.high,
           distanceFilter: 5,
         ),
       );
+
+  /// Position stream that keeps running while the app is in the background.
+  ///
+  /// Android: runs inside a foreground service with a persistent notification
+  /// (required by the OS). iOS: enables background location updates, which
+  /// needs the "location" UIBackgroundModes entry in Info.plist.
+  static Stream<Position> watchBackground() {
+    late final LocationSettings settings;
+    if (Platform.isAndroid) {
+      settings = AndroidSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 5,
+        intervalDuration: const Duration(seconds: 5),
+        foregroundNotificationConfig: const ForegroundNotificationConfig(
+          notificationTitle: 'AgriSmart is tracking your field walk',
+          notificationText:
+              'Your position keeps updating so the map stays centred.',
+          notificationChannelName: 'Field tracking',
+          enableWakeLock: true,
+          setOngoing: true,
+        ),
+      );
+    } else if (Platform.isIOS) {
+      settings = AppleSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 5,
+        activityType: ActivityType.otherNavigation,
+        pauseLocationUpdatesAutomatically: false,
+        showBackgroundLocationIndicator: true,
+        allowBackgroundLocationUpdates: true,
+      );
+    } else {
+      settings = const LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 5,
+      );
+    }
+    return Geolocator.getPositionStream(locationSettings: settings);
+  }
+
+  /// Remembers the newest fix so the map opens centred where the farmer was,
+  /// even if the app was killed while backgrounded.
+  static Future<void> cacheLast(Position p) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_kLastLat, p.latitude);
+    await prefs.setDouble(_kLastLng, p.longitude);
+  }
+
+  static Future<LatLng?> lastKnown() async {
+    final prefs = await SharedPreferences.getInstance();
+    final lat = prefs.getDouble(_kLastLat);
+    final lng = prefs.getDouble(_kLastLng);
+    if (lat == null || lng == null) return null;
+    return LatLng(lat, lng);
+  }
+
 
   static const _earthRadius = 6378137.0;
 
