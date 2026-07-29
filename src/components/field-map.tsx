@@ -378,11 +378,59 @@ export function FieldMap({
         </div>
       )}
       <div ref={ref} className="w-full overflow-hidden rounded-2xl border border-border shadow-soft" style={{ height }} />
+      {!readOnly && selected !== null && pts[selected] && (
+        <div className="rounded-2xl border border-border bg-card p-3 space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-sm font-semibold">Corner {selected + 1} of {pts.length}</div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setSelected((s) => (s === null ? null : (s + 1) % pts.length))}
+                className="rounded-xl border border-border px-2.5 py-1 text-xs"
+              >Next ›</button>
+              <button type="button" onClick={() => setSelected(null)} className="rounded-xl border border-border px-2.5 py-1 text-xs">Done</button>
+            </div>
+          </div>
+          <div className="font-mono text-[11px] text-muted-foreground">
+            {pts[selected][0].toFixed(6)}, {pts[selected][1].toFixed(6)}
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="grid grid-cols-3 gap-1">
+              <span />
+              <button type="button" onClick={() => nudge(step, 0)} className="rounded-lg border border-border px-2.5 py-1 text-xs">↑</button>
+              <span />
+              <button type="button" onClick={() => nudge(0, -step)} className="rounded-lg border border-border px-2.5 py-1 text-xs">←</button>
+              <span className="grid place-items-center text-[10px] text-muted-foreground">{step}m</span>
+              <button type="button" onClick={() => nudge(0, step)} className="rounded-lg border border-border px-2.5 py-1 text-xs">→</button>
+              <span />
+              <button type="button" onClick={() => nudge(-step, 0)} className="rounded-lg border border-border px-2.5 py-1 text-xs">↓</button>
+              <span />
+            </div>
+            <div className="inline-flex overflow-hidden rounded-xl border border-border text-xs">
+              {[0.5, 1, 5].map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setStep(s)}
+                  className={`px-2.5 py-1 ${step === s ? "bg-primary text-primary-foreground" : "bg-background"}`}
+                >{s} m</button>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={deleteSelected}
+              className="ml-auto rounded-xl bg-destructive px-3 py-1.5 text-xs text-destructive-foreground"
+            >🗑 Delete corner</button>
+          </div>
+        </div>
+      )}
       {!readOnly && (
         <div className="text-xs text-muted-foreground">
-          {mode === "add"
-            ? "Tap map to add corners, or tap an edge to insert a vertex. Drag markers to fine-tune."
-            : "Tap a numbered marker to delete it, drag to reshape, or tap an edge to insert a vertex."}
+          {selected !== null
+            ? "Drag the highlighted corner, or use the arrows / keyboard arrow keys for metre-precise adjustment. Delete key removes it."
+            : mode === "add"
+              ? "Tap map to add corners, or tap an edge to insert a vertex. Drag markers to fine-tune."
+              : "Tap a corner to select it, drag to reshape, or tap an edge to insert a vertex."}
         </div>
       )}
     </div>
