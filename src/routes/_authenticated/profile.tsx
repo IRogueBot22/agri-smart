@@ -97,7 +97,8 @@ function Profile() {
           <div><Label>{t("Phone")}</Label><Input value={p.phone ?? ""} onChange={(e) => setP({ ...p, phone: e.target.value })} /></div>
           <RegionPicker
             value={{ country: p.country, state: p.state, district: p.district, mandal: p.mandal, village: p.village }}
-            onChange={(v) => setP({ ...p, ...v })}
+            errors={regionErrors}
+            onChange={(v) => { setP({ ...p, ...v }); setRegionErrors({}); }}
           />
           <p className="text-xs text-muted-foreground">{t("Schemes and market prices are shown for this location.")}</p>
           <div>
