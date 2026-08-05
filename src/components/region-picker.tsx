@@ -116,6 +116,11 @@ export function RegionPicker({ value, onChange, errors }: { value: RegionValue; 
   const [locating, setLocating] = useState(false);
   const [locateStatus, setLocateStatus] = useState<string | null>(null);
   const [accuracy, setAccuracy] = useState<number | null>(null);
+  // Location permission handling: explain before asking, guide after a denial.
+  const [permission, setPermission] = useState<"unknown" | "unsupported" | "prompt" | "granted" | "denied">("unknown");
+  const [showConsent, setShowConsent] = useState(false);
+  const [geoFailed, setGeoFailed] = useState<string | null>(null);
+
 
   // Pending GPS pick shown on a small map so the farmer can confirm/adjust it.
   const [pin, setPin] = useState<{ lat: number; lng: number } | null>(null);
