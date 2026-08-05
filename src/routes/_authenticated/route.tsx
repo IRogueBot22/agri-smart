@@ -15,5 +15,6 @@ export const Route = createFileRoute("/_authenticated")({
 
 function AuthenticatedLayout() {
   useSevereWeatherAlerts();
+  useRegionAlerts();
   return <Outlet />;
 }
