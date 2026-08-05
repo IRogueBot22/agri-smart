@@ -8,6 +8,8 @@ import { COUNTRIES } from "@/lib/countries";
 import { INDIAN_STATES, districtsFor } from "@/lib/regions";
 import { listSubRegions } from "@/lib/places.functions";
 import { reverseGeocodeRegion, type ReverseGeocodeResult } from "@/lib/geocode.functions";
+import { getAccuratePosition } from "@/lib/geolocate";
+
 import { useI18n } from "@/lib/i18n";
 import type { RegionErrors } from "@/lib/region-schema";
 
@@ -110,6 +112,9 @@ export function RegionPicker({ value, onChange, errors }: { value: RegionValue; 
   const [villages, setVillages] = useState<string[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [locating, setLocating] = useState(false);
+  const [locateStatus, setLocateStatus] = useState<string | null>(null);
+  const [accuracy, setAccuracy] = useState<number | null>(null);
+
   // Pending GPS pick shown on a small map so the farmer can confirm/adjust it.
   const [pin, setPin] = useState<{ lat: number; lng: number } | null>(null);
   const [pinResult, setPinResult] = useState<ReverseGeocodeResult | null>(null);
@@ -155,26 +160,39 @@ export function RegionPicker({ value, onChange, errors }: { value: RegionValue; 
       return;
     }
     setLocating(true);
+    setLocateStatus(t("Searching for GPS signal…"));
     try {
-      const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 15000,
-          maximumAge: 60000,
-        }),
-      );
-      const lat = pos.coords.latitude;
-      const lng = pos.coords.longitude;
-      setPin({ lat, lng });
-      await lookupPin(lat, lng);
+      const fix = await getAccuratePosition({
+        desiredAccuracy: 50,
+        attemptTimeout: 12000,
+        retries: 3,
+        maximumAge: 30000,
+        onProgress: ({ attempt, attempts, accuracy }) => {
+          setLocateStatus(
+            accuracy == null
+              ? `${t("Searching for GPS signal…")} (${attempt}/${attempts})`
+              : `${t("Improving accuracy")} · ±${Math.round(accuracy)} m (${attempt}/${attempts})`,
+          );
+        },
+      });
+      setAccuracy(fix.accuracy);
+      setPin({ lat: fix.lat, lng: fix.lng });
+      if (fix.accuracy > 200) {
+        toast.warning(t("Weak GPS signal"), {
+          description: `${t("Accuracy")} ±${Math.round(fix.accuracy)} m — ${t("adjust the pin if needed")}`,
+        });
+      }
+      await lookupPin(fix.lat, fix.lng);
     } catch (e) {
       toast.error(t("Could not detect your location"), {
         description: e instanceof Error ? e.message : undefined,
       });
     } finally {
       setLocating(false);
+      setLocateStatus(null);
     }
   }
+
 
 
 
@@ -246,6 +264,13 @@ export function RegionPicker({ value, onChange, errors }: { value: RegionValue; 
         {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}
         {locating ? t("Detecting location…") : t("Use my current location")}
       </button>
+
+      {(locateStatus || (accuracy != null && pin)) && (
+        <p className="text-center text-xs text-muted-foreground">
+          {locateStatus ?? `${t("Accuracy")} ±${Math.round(accuracy!)} m`}
+        </p>
+      )}
+
 
       {pin && (
         <div className="space-y-2 rounded-md border bg-muted/30 p-2">
