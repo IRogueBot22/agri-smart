@@ -56,10 +56,10 @@ function Notifications() {
               <div className="rounded-2xl bg-primary/10 p-2 text-primary"><Icon className="h-5 w-5" /></div>
               <div className="flex-1">
                 <div className="flex items-center justify-between">
-                  <div className="text-sm font-semibold">{n.title}</div>
+                  <div className="text-sm font-semibold">{t(n.title)}</div>
                   <div className="text-[10px] text-muted-foreground">{formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}</div>
                 </div>
-                <p className="text-sm text-muted-foreground">{n.body}</p>
+                <p className="text-sm text-muted-foreground">{t(n.body)}</p>
               </div>
             </CardContent></Card>
           );
