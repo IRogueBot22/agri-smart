@@ -23,7 +23,7 @@ export const Route = createFileRoute("/_authenticated/profile")({
 
 function Profile() {
   const navigate = useNavigate();
-  const { setLang } = useI18n();
+  const { setLang, t } = useI18n();
   const [p, setP] = useState<any>(null);
   const [dark, setDark] = useState(false);
 
@@ -79,7 +79,7 @@ function Profile() {
             <div><Label className="text-xs">State</Label><Input value={p.state ?? ""} onChange={(e) => setP({ ...p, state: e.target.value })} /></div>
           </div>
           <div>
-            <Label>Language / भाषा</Label>
+            <Label>{t("language")}</Label>
             <select
               value={p.language ?? "en"}
               onChange={(e) => { setP({ ...p, language: e.target.value }); setLang(e.target.value); }}
