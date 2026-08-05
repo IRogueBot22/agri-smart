@@ -5,13 +5,17 @@ import { languageName } from "./languages";
 
 const MODEL = "google/gemini-3.6-flash";
 
-const IdentifyInput = z.object({
-  imageDataUrl: z.string().startsWith("data:image/"),
-  mode: z.enum(["weed", "plant", "seed"]),
-  language: z.string().default("en"),
-  storagePath: z.string().optional(),
-  fieldId: z.string().uuid().optional(),
-});
+const IdentifyInput = z
+  .object({
+    imageDataUrl: z.string().startsWith("data:image/").optional(),
+    imageDataUrls: z.array(z.string().startsWith("data:image/")).min(1).max(5).optional(),
+    mode: z.enum(["weed", "plant", "seed"]),
+    language: z.string().default("en"),
+    storagePath: z.string().optional(),
+    storagePaths: z.array(z.string()).optional(),
+    fieldId: z.string().uuid().optional(),
+  })
+  .refine((d) => !!(d.imageDataUrl || d.imageDataUrls?.length), { message: "At least one image is required" });
 
 const modePrompt = {
   weed: `Identify the WEED in this photo growing in/around an Indian farm field.
@@ -27,6 +31,10 @@ export const identifySpecimen = createServerFn({ method: "POST" })
     const key = process.env["LOVABLE_API_KEY"];
     if (!key) throw new Error("Missing LOVABLE_API_KEY");
     const lang = languageName(data.language);
+    const images = data.imageDataUrls?.length ? data.imageDataUrls : [data.imageDataUrl!];
+    const paths = data.storagePaths?.length ? data.storagePaths : data.storagePath ? [data.storagePath] : [];
+
+
 
     const body = {
       model: MODEL,
@@ -43,6 +51,8 @@ export const identifySpecimen = createServerFn({ method: "POST" })
               type: "text",
               text: `${modePrompt[data.mode]}
 
+You are given ${images.length} photo${images.length > 1 ? "s" : ""} of the SAME specimen taken from different angles or distances. Combine evidence from all photos into ONE single identification; if the photos disagree, prefer the clearest view and lower the confidence.
+
 Write EVERY human-readable string value in ${lang} (keep the scientific/botanical name in Latin script). Keep sentences short and simple for a farmer.
 
 Respond ONLY as strict JSON with this exact shape:
@@ -56,7 +66,7 @@ Respond ONLY as strict JSON with this exact shape:
 "safety":["<handling or toxicity warning>"],
 "candidates":[{"name":"<alternative match>","confidence":<0-100>}]}`,
             },
-            { type: "image_url", image_url: { url: data.imageDataUrl } },
+            ...images.map((url) => ({ type: "image_url", image_url: { url } })),
           ],
         },
       ],
@@ -81,11 +91,11 @@ Respond ONLY as strict JSON with this exact shape:
     await context.supabase.from("disease_scans").insert({
       user_id: context.userId,
       field_id: data.fieldId ?? null,
-      image_url: data.storagePath ?? "inline",
+      image_url: paths[0] ?? "inline",
       disease: `${data.mode === "weed" ? "Weed" : data.mode === "seed" ? "Seed" : "Plant"}: ${out.name ?? "Unknown"}`,
       confidence: out.confidence ?? null,
       recommendation: [...(out.control ?? []), ...(out.uses ?? [])].join(" • "),
-      raw: { ...out, mode: data.mode, language: data.language },
+      raw: { ...out, mode: data.mode, language: data.language, image_count: images.length, storage_paths: paths },
     });
 
     return out;

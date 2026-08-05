@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { identifySpecimen } from "@/lib/identify.functions";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
-import { Camera, Upload, Loader2, Sprout, Leaf, Wheat, AlertTriangle, ShieldCheck } from "lucide-react";
+import { Camera, Upload, Loader2, Sprout, Leaf, Wheat, AlertTriangle, ShieldCheck, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -25,11 +25,12 @@ export const Route = createFileRoute("/_authenticated/identify")({
 
 type Mode = "weed" | "plant" | "seed";
 
+const MAX_IMAGES = 5;
+
 function Identify() {
   const { t, lang } = useI18n();
   const [mode, setMode] = useState<Mode>("weed");
-  const [preview, setPreview] = useState<string | null>(null);
-  const [file, setFile] = useState<File | null>(null);
+  const [shots, setShots] = useState<{ preview: string; file: File }[]>([]);
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -37,31 +38,49 @@ function Identify() {
   const run = useServerFn(identifySpecimen);
 
   function onPick(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0];
+    const picked = Array.from(e.target.files ?? []);
     e.target.value = "";
-    if (!f) return;
-    if (f.size > 10 * 1024 * 1024) return toast.error("Image too large (max 10MB)");
-    const reader = new FileReader();
-    reader.onload = () => { setPreview(reader.result as string); setFile(f); setResult(null); };
-    reader.readAsDataURL(f);
+    if (!picked.length) return;
+    const room = MAX_IMAGES - shots.length;
+    if (room <= 0) return toast.error(`Maximum ${MAX_IMAGES} photos per scan`);
+    const accepted = picked.slice(0, room).filter((f) => {
+      if (f.size > 10 * 1024 * 1024) { toast.error(`${f.name}: image too large (max 10MB)`); return false; }
+      return true;
+    });
+    if (picked.length > room) toast.info(`Only ${room} more photo${room > 1 ? "s" : ""} added (max ${MAX_IMAGES})`);
+    accepted.forEach((f) => {
+      const reader = new FileReader();
+      reader.onload = () => setShots((prev) => (prev.length >= MAX_IMAGES ? prev : [...prev, { preview: reader.result as string, file: f }]));
+      reader.readAsDataURL(f);
+    });
+    setResult(null);
+  }
+
+  function removeShot(i: number) {
+    setShots((prev) => prev.filter((_, idx) => idx !== i));
+    setResult(null);
   }
 
   async function analyze() {
-    if (!preview || !file) return;
+    if (!shots.length) return;
     setLoading(true);
     setResult(null);
     try {
       const { data: u } = await supabase.auth.getUser();
       const uid = u.user!.id;
-      const ext = file.name.split(".").pop() || "jpg";
-      const path = `${uid}/${mode}_${Date.now()}.${ext}`;
-      let storagePath: string | undefined;
-      const { error } = await supabase.storage.from("leaf-scans").upload(path, file, {
-        contentType: file.type || "image/jpeg",
-      });
-      if (!error) storagePath = path;
+      const storagePaths: string[] = [];
+      for (const [i, s] of shots.entries()) {
+        const ext = s.file.name.split(".").pop() || "jpg";
+        const path = `${uid}/${mode}_${Date.now()}_${i}.${ext}`;
+        const { error } = await supabase.storage.from("leaf-scans").upload(path, s.file, {
+          contentType: s.file.type || "image/jpeg",
+        });
+        if (!error) storagePaths.push(path);
+      }
 
-      const out = await run({ data: { imageDataUrl: preview, mode, language: lang, storagePath } });
+      const out = await run({
+        data: { imageDataUrls: shots.map((s) => s.preview), mode, language: lang, storagePaths },
+      });
       setResult(out);
       toast.success(t("results"));
     } catch (e: any) {
@@ -106,25 +125,45 @@ function Identify() {
         </div>
 
         <Card className="shadow-soft"><CardContent className="p-4">
-          {preview ? (
-            <img src={preview} alt={`${mode} to identify`} className="mx-auto max-h-64 rounded-2xl object-contain" />
+          {shots.length > 0 ? (
+            <>
+              <img src={shots[0]!.preview} alt={`${mode} to identify`} className="mx-auto max-h-56 rounded-2xl object-contain" />
+              <div className="mt-3 flex flex-wrap gap-2">
+                {shots.map((s, i) => (
+                  <div key={i} className="relative">
+                    <img src={s.preview} alt={`Angle ${i + 1}`} className="h-16 w-16 rounded-xl border border-border object-cover" />
+                    <button
+                      onClick={() => removeShot(i)}
+                      aria-label={`Remove photo ${i + 1}`}
+                      className="absolute -right-1.5 -top-1.5 rounded-full bg-destructive p-0.5 text-destructive-foreground shadow-soft"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">
+                {shots.length}/{MAX_IMAGES} photos — add more angles (top, underside, close-up) for better accuracy.
+              </p>
+            </>
           ) : (
             <div className="mx-auto flex h-56 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5">
               <Sprout className="h-12 w-12 text-primary/70" />
               <p className="mt-2 px-6 text-center text-xs text-muted-foreground">{t("identifyDesc")}</p>
+              <p className="mt-1 px-6 text-center text-xs text-muted-foreground">Add up to {MAX_IMAGES} photos from different angles.</p>
             </div>
           )}
 
           <div className="mt-4 grid grid-cols-2 gap-2">
-            <input ref={fileRef} type="file" accept="image/*" hidden onChange={onPick} />
+            <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={onPick} />
             <input ref={camRef} type="file" accept="image/*" capture="environment" hidden onChange={onPick} />
-            <Button variant="outline" onClick={() => fileRef.current?.click()}><Upload className="mr-2 h-4 w-4" />{t("upload")}</Button>
-            <Button variant="outline" onClick={() => camRef.current?.click()}><Camera className="mr-2 h-4 w-4" />{t("camera")}</Button>
+            <Button variant="outline" disabled={shots.length >= MAX_IMAGES} onClick={() => fileRef.current?.click()}><Upload className="mr-2 h-4 w-4" />{t("upload")}</Button>
+            <Button variant="outline" disabled={shots.length >= MAX_IMAGES} onClick={() => camRef.current?.click()}><Camera className="mr-2 h-4 w-4" />{t("camera")}</Button>
           </div>
 
-          {preview && (
+          {shots.length > 0 && (
             <Button onClick={analyze} disabled={loading} className="mt-3 w-full bg-gradient-primary shadow-soft">
-              {loading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t("analyzing")}</>) : t("analyze")}
+              {loading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t("analyzing")}</>) : `${t("analyze")} (${shots.length})`}
             </Button>
           )}
         </CardContent></Card>
