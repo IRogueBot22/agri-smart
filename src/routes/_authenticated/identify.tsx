@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { AppShell } from "@/components/app-shell";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button";
 import { identifySpecimen } from "@/lib/identify.functions";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
-import { Camera, Upload, Loader2, Sprout, Leaf, Wheat, AlertTriangle, ShieldCheck, X } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { INDIAN_STATES, districtsFor } from "@/lib/regions";
+import { Camera, Upload, Loader2, Sprout, Leaf, Wheat, AlertTriangle, ShieldCheck, X, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -32,10 +34,50 @@ function Identify() {
   const [mode, setMode] = useState<Mode>("weed");
   const [shots, setShots] = useState<{ preview: string; file: File }[]>([]);
   const [result, setResult] = useState<any>(null);
+  const [state, setState] = useState<string>("");
+  const [district, setDistrict] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const camRef = useRef<HTMLInputElement>(null);
   const run = useServerFn(identifySpecimen);
+
+  // Prefill region from saved choice, else from the farmer profile
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const savedState = localStorage.getItem("agri.region.state") ?? "";
+      const savedDistrict = localStorage.getItem("agri.region.district") ?? "";
+      if (savedState) {
+        setState(savedState);
+        setDistrict(savedDistrict);
+        return;
+      }
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user) return;
+      const { data: p } = await supabase.from("profiles").select("state, district").eq("id", u.user.id).maybeSingle();
+      if (cancelled || !p) return;
+      const st = INDIAN_STATES.find((s) => s.toLowerCase() === (p.state ?? "").trim().toLowerCase());
+      if (st) {
+        setState(st);
+        const d = districtsFor(st).find((x) => x.toLowerCase() === (p.district ?? "").trim().toLowerCase());
+        if (d) setDistrict(d);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  function pickState(v: string) {
+    setState(v);
+    setDistrict("");
+    localStorage.setItem("agri.region.state", v);
+    localStorage.removeItem("agri.region.district");
+    setResult(null);
+  }
+  function pickDistrict(v: string) {
+    setDistrict(v);
+    localStorage.setItem("agri.region.district", v);
+    setResult(null);
+  }
 
   function onPick(e: React.ChangeEvent<HTMLInputElement>) {
     const picked = Array.from(e.target.files ?? []);
@@ -79,7 +121,14 @@ function Identify() {
       }
 
       const out = await run({
-        data: { imageDataUrls: shots.map((s) => s.preview), mode, language: lang, storagePaths },
+        data: {
+          imageDataUrls: shots.map((s) => s.preview),
+          mode,
+          language: lang,
+          storagePaths,
+          ...(state ? { state } : {}),
+          ...(district ? { district } : {}),
+        },
       });
       setResult(out);
       toast.success(t("results"));
@@ -123,6 +172,31 @@ function Identify() {
             );
           })}
         </div>
+
+        <Card className="shadow-soft"><CardContent className="space-y-2 p-4">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground">
+            <MapPin className="h-4 w-4 text-primary" /> Your region
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <Select value={state} onValueChange={pickState}>
+              <SelectTrigger aria-label="State"><SelectValue placeholder="State" /></SelectTrigger>
+              <SelectContent className="max-h-72">
+                {INDIAN_STATES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Select value={district} onValueChange={pickDistrict} disabled={!state}>
+              <SelectTrigger aria-label="District"><SelectValue placeholder={state ? "District" : "Pick state first"} /></SelectTrigger>
+              <SelectContent className="max-h-72">
+                {districtsFor(state).map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {state
+              ? `Control steps, doses and safe options will be tailored to ${district ? district + ", " : ""}${state}.`
+              : "Choose your state and district to get control advice suited to your area."}
+          </p>
+        </CardContent></Card>
 
         <Card className="shadow-soft"><CardContent className="p-4">
           {shots.length > 0 ? (
@@ -196,7 +270,16 @@ function Identify() {
 
             <Section title={t("harmful")} items={result.harms} tone="destructive" />
             <Section title={t("uses")} items={result.uses} tone="primary" />
+            {(state || result.region_notes?.length) && (
+              <div className="flex items-center gap-2 rounded-xl bg-muted/60 px-3 py-2 text-xs font-medium text-muted-foreground">
+                <MapPin className="h-3.5 w-3.5 text-primary" />
+                Advice tailored for {district ? `${district}, ` : ""}{state || "India"}
+              </div>
+            )}
+            <Section title="Regional notes" items={result.region_notes} tone="primary" />
             <Section title={t("control")} items={result.control} tone="accent" />
+            <Section title={`${t("control")} — ${district || state || "region"}`} items={result.regional_control} tone="accent" />
+            <Section title="Safe options" items={result.safe_options} tone="primary" />
             <Section title="⚠" items={result.safety} tone="amber" />
 
             {result.candidates?.length > 0 && (
