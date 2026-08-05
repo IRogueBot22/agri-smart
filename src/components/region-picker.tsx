@@ -110,8 +110,44 @@ export function RegionPicker({ value, onChange, errors }: { value: RegionValue; 
   const [villages, setVillages] = useState<string[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [locating, setLocating] = useState(false);
+  // Pending GPS pick shown on a small map so the farmer can confirm/adjust it.
+  const [pin, setPin] = useState<{ lat: number; lng: number } | null>(null);
+  const [pinResult, setPinResult] = useState<ReverseGeocodeResult | null>(null);
+  const [pinBusy, setPinBusy] = useState(false);
 
   const staticDistricts = useMemo(() => (isIndia ? districtsFor(value.state) : []), [isIndia, value.state]);
+
+  async function lookupPin(lat: number, lng: number) {
+    setPinBusy(true);
+    try {
+      const r = await reverseGeocode({ data: { lat, lon: lng } });
+      setPinResult(r);
+    } catch (e) {
+      setPinResult(null);
+      toast.error(t("Could not read that location"), {
+        description: e instanceof Error ? e.message : undefined,
+      });
+    } finally {
+      setPinBusy(false);
+    }
+  }
+
+  function applyPin() {
+    const r = pinResult;
+    if (!r) return;
+    const detectedCountry =
+      (r.country && COUNTRIES.find((c) => c.toLowerCase() === r.country!.toLowerCase())) || r.country || country;
+    onChange({
+      country: detectedCountry,
+      state: r.state ?? "",
+      district: r.district ?? "",
+      mandal: r.mandal ?? "",
+      village: r.village ?? "",
+    });
+    setPin(null);
+    setPinResult(null);
+    toast.success(t("Location confirmed"), { description: r.label ?? undefined });
+  }
 
   async function detectFromGps() {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
@@ -127,19 +163,10 @@ export function RegionPicker({ value, onChange, errors }: { value: RegionValue; 
           maximumAge: 60000,
         }),
       );
-      const r = await reverseGeocode({
-        data: { lat: pos.coords.latitude, lon: pos.coords.longitude },
-      });
-      const detectedCountry =
-        (r.country && COUNTRIES.find((c) => c.toLowerCase() === r.country!.toLowerCase())) || r.country || country;
-      onChange({
-        country: detectedCountry,
-        state: r.state ?? "",
-        district: r.district ?? "",
-        mandal: r.mandal ?? "",
-        village: r.village ?? "",
-      });
-      toast.success(t("Location detected"), { description: r.label ?? undefined });
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      setPin({ lat, lng });
+      await lookupPin(lat, lng);
     } catch (e) {
       toast.error(t("Could not detect your location"), {
         description: e instanceof Error ? e.message : undefined,
@@ -148,6 +175,7 @@ export function RegionPicker({ value, onChange, errors }: { value: RegionValue; 
       setLocating(false);
     }
   }
+
 
 
   async function load(
