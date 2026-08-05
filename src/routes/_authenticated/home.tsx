@@ -104,7 +104,7 @@ function Home() {
             <QuickAction to="/weather" icon={Cloud} label="Weather" />
             <QuickAction to="/advisor" icon={Sprout} label="AI Advice" />
             <QuickAction to="/disease" icon={Bug} label="Leaf Scan" />
-            <QuickAction to="/identify" icon={ScanSearch} label="Weed / Plant / Seed ID" />
+            <QuickAction to="/identify" icon={ScanSearch} label="Identify" />
             <QuickAction to="/market" icon={TrendingUp} label="Market" />
             <QuickAction to="/schemes" icon={Landmark} label="Schemes" />
           </div>
