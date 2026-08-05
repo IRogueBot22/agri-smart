@@ -2,17 +2,19 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { Home, Map, Sparkles, Bell, User, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PullToRefresh } from "@/components/pull-to-refresh";
+import { useI18n, type TKey } from "@/lib/i18n";
 
 const items = [
-  { to: "/home", icon: Home, label: "Home" },
-  { to: "/fields", icon: Map, label: "Fields" },
-  { to: "/advisor", icon: Sparkles, label: "AI Advisor" },
-  { to: "/notifications", icon: Bell, label: "Alerts" },
-  { to: "/profile", icon: User, label: "Profile" },
+  { to: "/home", icon: Home, key: "home" as TKey },
+  { to: "/fields", icon: Map, key: "fields" as TKey },
+  { to: "/advisor", icon: Sparkles, key: "advisor" as TKey },
+  { to: "/notifications", icon: Bell, key: "alerts" as TKey },
+  { to: "/profile", icon: User, key: "profile" as TKey },
 ] as const;
 
 export function BottomNav() {
   const { pathname } = useLocation();
+  const { t } = useI18n();
   return (
     <nav className="fixed inset-x-0 bottom-0 z-50 mx-auto max-w-md border-t border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
       <ul className="flex items-center justify-around px-2 py-2">
@@ -31,7 +33,7 @@ export function BottomNav() {
                 <div className={cn("rounded-2xl p-1.5 transition-all", active && "bg-primary/10")}>
                   <Icon className={cn("h-5 w-5", active && "scale-110")} />
                 </div>
-                <span>{it.label}</span>
+                <span>{t(it.key)}</span>
               </Link>
             </li>
           );
