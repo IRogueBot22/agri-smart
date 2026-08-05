@@ -57,7 +57,14 @@ function Field({
       </div>
       {manual ? (
         <div className="flex gap-1">
-          <Input value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />
+          <Input
+            value={value}
+            placeholder={placeholder}
+            maxLength={80}
+            aria-invalid={!!error}
+            className={error ? "border-destructive" : undefined}
+            onChange={(e) => onChange(e.target.value)}
+          />
           {options.length > 0 && (
             <button type="button" onClick={() => { setManual(false); onChange(""); }} className="rounded-md border px-2 text-xs">↺</button>
           )}
@@ -66,23 +73,26 @@ function Field({
         <select
           value={known ? value : ""}
           disabled={disabled}
+          aria-invalid={!!error}
           onChange={(e) => {
             if (e.target.value === OTHER) { setManual(true); onChange(""); return; }
             onChange(e.target.value);
           }}
-          className="h-10 w-full rounded-md border bg-background px-3 text-sm disabled:opacity-50"
+          className={`h-10 w-full rounded-md border bg-background px-3 text-sm disabled:opacity-50 ${error ? "border-destructive" : ""}`}
         >
           <option value="">{placeholder}</option>
           {options.map((o) => <option key={o} value={o}>{o}</option>)}
           <option value={OTHER}>Other / type manually…</option>
         </select>
       )}
+      {error && <p className="mt-1 text-xs text-destructive">{error}</p>}
     </div>
   );
 }
 
-export function RegionPicker({ value, onChange }: { value: RegionValue; onChange: (v: RegionValue) => void }) {
+export function RegionPicker({ value, onChange, errors }: { value: RegionValue; onChange: (v: RegionValue) => void; errors?: RegionErrors }) {
   const { t } = useI18n();
+
   const fetchSub = useServerFn(listSubRegions);
   const reverseGeocode = useServerFn(reverseGeocodeRegion);
 
