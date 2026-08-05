@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -76,27 +77,33 @@ export function ScanHistory({ refreshKey = 0 }: { refreshKey?: number }) {
         <ul className="space-y-3">
           {rows.map((r) => (
             <li key={r.id} className="flex items-start gap-3">
-              {r.signedUrl ? (
-                <img src={r.signedUrl} alt={r.disease ?? "Leaf scan"} loading="lazy" className="h-14 w-14 shrink-0 rounded-xl object-cover" />
-              ) : (
-                <div className="h-14 w-14 shrink-0 rounded-xl bg-muted" />
-              )}
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="truncate text-sm font-medium">{r.disease ?? "Unknown"}</span>
-                  {r.confidence != null && (
-                    <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
-                      {Math.round(Number(r.confidence))}%
-                    </span>
+              <Link
+                to="/scans/$id"
+                params={{ id: r.id }}
+                className="flex min-w-0 flex-1 items-start gap-3 rounded-xl transition-colors hover:bg-muted/50"
+              >
+                {r.signedUrl ? (
+                  <img src={r.signedUrl} alt={r.disease ?? "Leaf scan"} loading="lazy" className="h-14 w-14 shrink-0 rounded-xl object-cover" />
+                ) : (
+                  <div className="h-14 w-14 shrink-0 rounded-xl bg-muted" />
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="truncate text-sm font-medium">{r.disease ?? "Unknown"}</span>
+                    {r.confidence != null && (
+                      <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                        {Math.round(Number(r.confidence))}%
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-[11px] text-muted-foreground">
+                    {formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}
+                  </div>
+                  {r.recommendation && (
+                    <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{r.recommendation}</p>
                   )}
                 </div>
-                <div className="text-[11px] text-muted-foreground">
-                  {formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}
-                </div>
-                {r.recommendation && (
-                  <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{r.recommendation}</p>
-                )}
-              </div>
+              </Link>
               <button
                 type="button"
                 onClick={() => remove(r.id)}
@@ -108,6 +115,7 @@ export function ScanHistory({ refreshKey = 0 }: { refreshKey?: number }) {
             </li>
           ))}
         </ul>
+
 
         {more && (
           <Button variant="outline" className="w-full" onClick={() => setLimit((l) => l + PAGE)} disabled={loading}>

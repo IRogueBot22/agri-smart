@@ -23,6 +23,7 @@ import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/h
 import { Route as AuthenticatedDiseaseRouteImport } from './routes/_authenticated/disease'
 import { Route as AuthenticatedAdvisorRouteImport } from './routes/_authenticated/advisor'
 import { Route as AuthenticatedFieldsIndexRouteImport } from './routes/_authenticated/fields.index'
+import { Route as AuthenticatedScansIdRouteImport } from './routes/_authenticated/scans.$id'
 import { Route as AuthenticatedFieldsNewRouteImport } from './routes/_authenticated/fields.new'
 import { Route as AuthenticatedFieldsIdRouteImport } from './routes/_authenticated/fields.$id'
 import { Route as ApiPublicPushSendRouteImport } from './routes/api/public/push/send'
@@ -102,6 +103,11 @@ const AuthenticatedFieldsIndexRoute =
     path: '/fields/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedScansIdRoute = AuthenticatedScansIdRouteImport.update({
+  id: '/scans/$id',
+  path: '/scans/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedFieldsNewRoute = AuthenticatedFieldsNewRouteImport.update({
   id: '/fields/new',
   path: '/fields/new',
@@ -153,6 +159,7 @@ export interface FileRoutesByFullPath {
   '/schemes/': typeof SchemesIndexRoute
   '/fields/$id': typeof AuthenticatedFieldsIdRoute
   '/fields/new': typeof AuthenticatedFieldsNewRoute
+  '/scans/$id': typeof AuthenticatedScansIdRoute
   '/fields/': typeof AuthenticatedFieldsIndexRoute
   '/api/public/ai/advise': typeof ApiPublicAiAdviseRoute
   '/api/public/ai/chat': typeof ApiPublicAiChatRoute
@@ -175,6 +182,7 @@ export interface FileRoutesByTo {
   '/schemes': typeof SchemesIndexRoute
   '/fields/$id': typeof AuthenticatedFieldsIdRoute
   '/fields/new': typeof AuthenticatedFieldsNewRoute
+  '/scans/$id': typeof AuthenticatedScansIdRoute
   '/fields': typeof AuthenticatedFieldsIndexRoute
   '/api/public/ai/advise': typeof ApiPublicAiAdviseRoute
   '/api/public/ai/chat': typeof ApiPublicAiChatRoute
@@ -199,6 +207,7 @@ export interface FileRoutesById {
   '/schemes/': typeof SchemesIndexRoute
   '/_authenticated/fields/$id': typeof AuthenticatedFieldsIdRoute
   '/_authenticated/fields/new': typeof AuthenticatedFieldsNewRoute
+  '/_authenticated/scans/$id': typeof AuthenticatedScansIdRoute
   '/_authenticated/fields/': typeof AuthenticatedFieldsIndexRoute
   '/api/public/ai/advise': typeof ApiPublicAiAdviseRoute
   '/api/public/ai/chat': typeof ApiPublicAiChatRoute
@@ -223,6 +232,7 @@ export interface FileRouteTypes {
     | '/schemes/'
     | '/fields/$id'
     | '/fields/new'
+    | '/scans/$id'
     | '/fields/'
     | '/api/public/ai/advise'
     | '/api/public/ai/chat'
@@ -245,6 +255,7 @@ export interface FileRouteTypes {
     | '/schemes'
     | '/fields/$id'
     | '/fields/new'
+    | '/scans/$id'
     | '/fields'
     | '/api/public/ai/advise'
     | '/api/public/ai/chat'
@@ -268,6 +279,7 @@ export interface FileRouteTypes {
     | '/schemes/'
     | '/_authenticated/fields/$id'
     | '/_authenticated/fields/new'
+    | '/_authenticated/scans/$id'
     | '/_authenticated/fields/'
     | '/api/public/ai/advise'
     | '/api/public/ai/chat'
@@ -390,6 +402,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFieldsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/scans/$id': {
+      id: '/_authenticated/scans/$id'
+      path: '/scans/$id'
+      fullPath: '/scans/$id'
+      preLoaderRoute: typeof AuthenticatedScansIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/fields/new': {
       id: '/_authenticated/fields/new'
       path: '/fields/new'
@@ -452,6 +471,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedWeatherRoute: typeof AuthenticatedWeatherRoute
   AuthenticatedFieldsIdRoute: typeof AuthenticatedFieldsIdRoute
   AuthenticatedFieldsNewRoute: typeof AuthenticatedFieldsNewRoute
+  AuthenticatedScansIdRoute: typeof AuthenticatedScansIdRoute
   AuthenticatedFieldsIndexRoute: typeof AuthenticatedFieldsIndexRoute
 }
 
@@ -465,6 +485,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedWeatherRoute: AuthenticatedWeatherRoute,
   AuthenticatedFieldsIdRoute: AuthenticatedFieldsIdRoute,
   AuthenticatedFieldsNewRoute: AuthenticatedFieldsNewRoute,
+  AuthenticatedScansIdRoute: AuthenticatedScansIdRoute,
   AuthenticatedFieldsIndexRoute: AuthenticatedFieldsIndexRoute,
 }
 
