@@ -66,7 +66,7 @@ Respond ONLY as strict JSON with this exact shape:
 "safety":["<handling or toxicity warning>"],
 "candidates":[{"name":"<alternative match>","confidence":<0-100>}]}`,
             },
-            { type: "image_url", image_url: { url: data.imageDataUrl } },
+            ...images.map((url) => ({ type: "image_url", image_url: { url } })),
           ],
         },
       ],
