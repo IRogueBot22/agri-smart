@@ -3,6 +3,7 @@ import { Home, Map, Sparkles, Bell, User, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PullToRefresh } from "@/components/pull-to-refresh";
 import { useI18n, type TKey } from "@/lib/i18n";
+import { LanguageSelector } from "@/components/language-selector";
 
 const items = [
   { to: "/home", icon: Home, key: "home" as TKey },
