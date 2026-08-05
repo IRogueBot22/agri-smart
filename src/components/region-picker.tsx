@@ -170,9 +170,47 @@ export function RegionPicker({ value, onChange, errors }: { value: RegionValue; 
     toast.success(t("Location confirmed"), { description: r.label ?? undefined });
   }
 
-  async function detectFromGps() {
+  // Read the current permission state (where supported) so we can tailor copy.
+  useEffect(() => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
-      toast.error(t("Location is not supported on this device"));
+      setPermission("unsupported");
+      return;
+    }
+    const perms = navigator.permissions;
+    if (!perms?.query) { setPermission("unknown"); return; }
+    let status: PermissionStatus | null = null;
+    const onChange = () => status && setPermission(status.state as "prompt" | "granted" | "denied");
+    perms
+      .query({ name: "geolocation" as PermissionName })
+      .then((s) => {
+        status = s;
+        setPermission(s.state as "prompt" | "granted" | "denied");
+        s.addEventListener("change", onChange);
+      })
+      .catch(() => setPermission("unknown"));
+    return () => status?.removeEventListener("change", onChange);
+  }, []);
+
+  /** Entry point from the button: explain first if we haven't asked yet. */
+  function requestLocation() {
+    if (permission === "unsupported") {
+      setGeoFailed("unsupported");
+      return;
+    }
+    if (permission === "denied") {
+      setGeoFailed("denied");
+      return;
+    }
+    if (permission === "granted") { detectFromGps(); return; }
+    setShowConsent(true);
+  }
+
+  async function detectFromGps() {
+    setShowConsent(false);
+    setGeoFailed(null);
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      setPermission("unsupported");
+      setGeoFailed("unsupported");
       return;
     }
     setLocating(true);
@@ -200,14 +238,19 @@ export function RegionPicker({ value, onChange, errors }: { value: RegionValue; 
       }
       await lookupPin(fix.lat, fix.lng);
     } catch (e) {
-      toast.error(t("Could not detect your location"), {
-        description: e instanceof Error ? e.message : undefined,
-      });
+      const msg = e instanceof Error ? e.message : "";
+      if (/denied/i.test(msg)) {
+        setPermission("denied");
+        setGeoFailed("denied");
+      } else if (!/cancelled/i.test(msg)) {
+        setGeoFailed("unavailable");
+      }
     } finally {
       setLocating(false);
       setLocateStatus(null);
     }
   }
+
 
 
 
