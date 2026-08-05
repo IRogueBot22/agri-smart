@@ -316,13 +316,72 @@ export function RegionPicker({ value, onChange, errors }: { value: RegionValue; 
     <div className="space-y-3">
       <button
         type="button"
-        onClick={detectFromGps}
-        disabled={locating}
+        onClick={requestLocation}
+        disabled={locating || permission === "unsupported"}
         className="flex w-full items-center justify-center gap-2 rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-sm font-medium text-primary disabled:opacity-60"
       >
         {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}
         {locating ? t("Detecting location…") : t("Use my current location")}
       </button>
+
+      {showConsent && (
+        <div className="space-y-2 rounded-md border border-primary/30 bg-primary/5 p-3">
+          <p className="text-sm font-medium">{t("Allow location access?")}</p>
+          <p className="text-xs text-muted-foreground">
+            {t(
+              "We use your location only to fill in your country, state, district and village. It is never shared, and you can always type your region by hand.",
+            )}
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={detectFromGps}
+              className="flex-1 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground"
+            >
+              {t("Allow")}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setShowConsent(false); setGeoFailed("manual"); }}
+              className="flex-1 rounded-md border px-3 py-2 text-sm font-medium"
+            >
+              {t("Enter manually")}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {geoFailed && (
+        <div className="flex items-start gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
+          <MapPinOff className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+          <div className="space-y-1 text-xs">
+            <p className="font-medium text-foreground">
+              {geoFailed === "denied"
+                ? t("Location access is blocked")
+                : geoFailed === "unsupported"
+                  ? t("Location is not supported on this device")
+                  : geoFailed === "manual"
+                    ? t("No problem — choose your region below")
+                    : t("Could not detect your location")}
+            </p>
+            <p className="text-muted-foreground">
+              {geoFailed === "denied"
+                ? t(
+                    "Enable location for this site in your browser or phone settings, then tap Use my current location again. You can also select your region manually below.",
+                  )
+                : t("Select your country, state, district, mandal and village from the lists below.")}
+            </p>
+            <button
+              type="button"
+              onClick={() => setGeoFailed(null)}
+              className="font-medium text-primary underline"
+            >
+              {t("Dismiss")}
+            </button>
+          </div>
+        </div>
+      )}
+
 
       {(locateStatus || (accuracy != null && pin)) && (
         <p className="text-center text-xs text-muted-foreground">
