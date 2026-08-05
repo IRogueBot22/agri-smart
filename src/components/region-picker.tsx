@@ -123,10 +123,18 @@ export function RegionPicker({ value, onChange, errors }: { value: RegionValue; 
   const staticDistricts = useMemo(() => (isIndia ? districtsFor(value.state) : []), [isIndia, value.state]);
 
   async function lookupPin(lat: number, lng: number) {
+    // Reuse a nearby cached lookup instead of hitting the geocoding API again.
+    const cached = getCachedGeocode(lat, lng);
+    if (cached) {
+      setPinResult(cached);
+      setPinBusy(false);
+      return;
+    }
     setPinBusy(true);
     try {
       const r = await reverseGeocode({ data: { lat, lon: lng } });
       setPinResult(r);
+      if (r) setCachedGeocode(lat, lng, r);
     } catch (e) {
       setPinResult(null);
       toast.error(t("Could not read that location"), {
@@ -136,6 +144,7 @@ export function RegionPicker({ value, onChange, errors }: { value: RegionValue; 
       setPinBusy(false);
     }
   }
+
 
   function applyPin() {
     const r = pinResult;
