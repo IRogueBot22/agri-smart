@@ -84,11 +84,6 @@ export function AppShell({
           <div className="ml-auto"><LanguageSelector /></div>
         </header>
       )}
-      {!title && (
-        <div className="sticky top-0 z-40 flex justify-end bg-background/95 px-2 pt-2 backdrop-blur">
-          <LanguageSelector />
-        </div>
-      )}
       {onRefresh ? <PullToRefresh onRefresh={onRefresh}>{content}</PullToRefresh> : content}
       <FloatingChatButton />
       <BottomNav />
