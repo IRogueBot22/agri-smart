@@ -247,6 +247,50 @@ export function RegionPicker({ value, onChange, errors }: { value: RegionValue; 
         {locating ? t("Detecting location…") : t("Use my current location")}
       </button>
 
+      {pin && (
+        <div className="space-y-2 rounded-md border bg-muted/30 p-2">
+          <p className="text-xs text-muted-foreground">
+            {t("Drag the pin or tap the map to adjust, then confirm.")}
+          </p>
+          <Suspense fallback={<div className="h-[180px] w-full animate-pulse rounded-md bg-muted" />}>
+            <LocationPinMap
+              lat={pin.lat}
+              lng={pin.lng}
+              onMove={(lat, lng) => { setPin({ lat, lng }); lookupPin(lat, lng); }}
+            />
+          </Suspense>
+          <div className="text-xs">
+            {pinBusy ? (
+              <span className="flex items-center gap-1 text-muted-foreground">
+                <Loader2 className="h-3 w-3 animate-spin" /> {t("Reading location…")}
+              </span>
+            ) : (
+              <span className="text-muted-foreground">{pinResult?.label ?? t("Unknown location")}</span>
+            )}
+            <div className="mt-0.5 text-[10px] text-muted-foreground">
+              {pin.lat.toFixed(5)}, {pin.lng.toFixed(5)}
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={applyPin}
+              disabled={pinBusy || !pinResult}
+              className="flex flex-1 items-center justify-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground disabled:opacity-60"
+            >
+              <Check className="h-4 w-4" /> {t("Confirm location")}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setPin(null); setPinResult(null); }}
+              className="flex items-center justify-center gap-1 rounded-md border px-3 py-2 text-sm"
+            >
+              <X className="h-4 w-4" /> {t("Cancel")}
+            </button>
+          </div>
+        </div>
+      )}
+
       <div>
         <Label className="text-xs">{t("Country")}</Label>
         <select
