@@ -37,13 +37,24 @@ export const Route = createFileRoute("/api/public/push/send")({
           const { data: prefRow } = await caller.supabase
             .from("profiles")
             .select(
-              "notify_weather, notify_recommendations, notify_disease, quiet_hours_enabled, quiet_start, quiet_end",
+              "notify_weather, notify_recommendations, notify_disease, quiet_hours_enabled, quiet_start, quiet_end, language",
             )
             .eq("id", caller.userId)
             .single();
           const verdict = shouldDeliver(normalizePrefs(prefRow as any), kind, new Date(), tz);
           if (!verdict.allowed) {
             return json({ sent: 0, failed: 0, devices: 0, suppressed: verdict.reason });
+          }
+
+          // Deliver the alert in the farmer's chosen language.
+          const lang = (prefRow as any)?.language ?? "en";
+          let outTitle = title;
+          let outBody = body;
+          if (lang && lang !== "en") {
+            const { translateTexts } = await import("@/lib/translate.server");
+            const m = await translateTexts(lang, [title, body]);
+            outTitle = m[title] || title;
+            outBody = m[body] || body;
           }
 
           const { isPushConfigured, sendToDevices } = await import(
@@ -69,7 +80,7 @@ export const Route = createFileRoute("/api/public/push/send")({
             return json({ error: "No registered devices" }, 404);
           }
 
-          const result = await sendToDevices(tokens, { title, body, kind });
+          const result = await sendToDevices(tokens, { title: outTitle, body: outBody, kind });
 
           if (result.invalidTokens.length) {
             await caller.supabase
@@ -82,8 +93,8 @@ export const Route = createFileRoute("/api/public/push/send")({
             await caller.supabase.from("notifications").insert({
               user_id: caller.userId,
               kind,
-              title,
-              body,
+              title: outTitle,
+              body: outBody,
             });
           }
 
