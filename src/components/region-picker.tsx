@@ -2,10 +2,12 @@ import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Loader2 } from "lucide-react";
+import { Loader2, LocateFixed } from "lucide-react";
+import { toast } from "sonner";
 import { COUNTRIES } from "@/lib/countries";
 import { INDIAN_STATES, districtsFor } from "@/lib/regions";
 import { listSubRegions } from "@/lib/places.functions";
+import { reverseGeocodeRegion } from "@/lib/geocode.functions";
 import { useI18n } from "@/lib/i18n";
 
 export type RegionValue = {
@@ -80,6 +82,7 @@ function Field({
 export function RegionPicker({ value, onChange }: { value: RegionValue; onChange: (v: RegionValue) => void }) {
   const { t } = useI18n();
   const fetchSub = useServerFn(listSubRegions);
+  const reverseGeocode = useServerFn(reverseGeocodeRegion);
 
   const country = value.country || "India";
   const isIndia = country === "India";
@@ -89,8 +92,46 @@ export function RegionPicker({ value, onChange }: { value: RegionValue; onChange
   const [mandals, setMandals] = useState<string[]>([]);
   const [villages, setVillages] = useState<string[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
+  const [locating, setLocating] = useState(false);
 
   const staticDistricts = useMemo(() => (isIndia ? districtsFor(value.state) : []), [isIndia, value.state]);
+
+  async function detectFromGps() {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      toast.error(t("Location is not supported on this device"));
+      return;
+    }
+    setLocating(true);
+    try {
+      const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 60000,
+        }),
+      );
+      const r = await reverseGeocode({
+        data: { lat: pos.coords.latitude, lon: pos.coords.longitude },
+      });
+      const detectedCountry =
+        (r.country && COUNTRIES.find((c) => c.toLowerCase() === r.country!.toLowerCase())) || r.country || country;
+      onChange({
+        country: detectedCountry,
+        state: r.state ?? "",
+        district: r.district ?? "",
+        mandal: r.mandal ?? "",
+        village: r.village ?? "",
+      });
+      toast.success(t("Location detected"), { description: r.label ?? undefined });
+    } catch (e) {
+      toast.error(t("Could not detect your location"), {
+        description: e instanceof Error ? e.message : undefined,
+      });
+    } finally {
+      setLocating(false);
+    }
+  }
+
 
   async function load(
     level: "state" | "district" | "mandal" | "village",
@@ -151,6 +192,16 @@ export function RegionPicker({ value, onChange }: { value: RegionValue; onChange
 
   return (
     <div className="space-y-3">
+      <button
+        type="button"
+        onClick={detectFromGps}
+        disabled={locating}
+        className="flex w-full items-center justify-center gap-2 rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-sm font-medium text-primary disabled:opacity-60"
+      >
+        {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}
+        {locating ? t("Detecting location…") : t("Use my current location")}
+      </button>
+
       <div>
         <Label className="text-xs">{t("Country")}</Label>
         <select
