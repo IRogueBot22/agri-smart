@@ -5,13 +5,17 @@ import { languageName } from "./languages";
 
 const MODEL = "google/gemini-3.6-flash";
 
-const IdentifyInput = z.object({
-  imageDataUrl: z.string().startsWith("data:image/"),
-  mode: z.enum(["weed", "plant", "seed"]),
-  language: z.string().default("en"),
-  storagePath: z.string().optional(),
-  fieldId: z.string().uuid().optional(),
-});
+const IdentifyInput = z
+  .object({
+    imageDataUrl: z.string().startsWith("data:image/").optional(),
+    imageDataUrls: z.array(z.string().startsWith("data:image/")).min(1).max(5).optional(),
+    mode: z.enum(["weed", "plant", "seed"]),
+    language: z.string().default("en"),
+    storagePath: z.string().optional(),
+    storagePaths: z.array(z.string()).optional(),
+    fieldId: z.string().uuid().optional(),
+  })
+  .refine((d) => !!(d.imageDataUrl || d.imageDataUrls?.length), { message: "At least one image is required" });
 
 const modePrompt = {
   weed: `Identify the WEED in this photo growing in/around an Indian farm field.
