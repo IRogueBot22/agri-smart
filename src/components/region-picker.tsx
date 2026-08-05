@@ -265,6 +265,13 @@ export function RegionPicker({ value, onChange, errors }: { value: RegionValue; 
         {locating ? t("Detecting location…") : t("Use my current location")}
       </button>
 
+      {(locateStatus || (accuracy != null && pin)) && (
+        <p className="text-center text-xs text-muted-foreground">
+          {locateStatus ?? `${t("Accuracy")} ±${Math.round(accuracy!)} m`}
+        </p>
+      )}
+
+
       {pin && (
         <div className="space-y-2 rounded-md border bg-muted/30 p-2">
           <p className="text-xs text-muted-foreground">
