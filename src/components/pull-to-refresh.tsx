@@ -54,6 +54,7 @@ export function PullToRefresh({
 
   return (
     <div
+      className="relative"
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
@@ -61,8 +62,8 @@ export function PullToRefresh({
       style={{ transform: `translateY(${pull}px)`, transition: active.current ? "none" : "transform 200ms ease-out" }}
     >
       <div
-        className="pointer-events-none flex items-center justify-center"
-        style={{ height: pull > 0 || refreshing ? THRESHOLD : 0, marginTop: -THRESHOLD, opacity: progress || (refreshing ? 1 : 0), transition: "height 150ms, opacity 150ms" }}
+        className="pointer-events-none absolute inset-x-0 top-0 flex items-center justify-center"
+        style={{ height: THRESHOLD, marginTop: -THRESHOLD, opacity: progress || (refreshing ? 1 : 0), transition: "opacity 150ms" }}
       >
         <div className="rounded-full bg-card p-2 shadow-soft">
           <RefreshCw

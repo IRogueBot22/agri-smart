@@ -84,12 +84,12 @@ function Identify() {
     e.target.value = "";
     if (!picked.length) return;
     const room = MAX_IMAGES - shots.length;
-    if (room <= 0) return toast.error(`Maximum ${MAX_IMAGES} photos per scan`);
+    if (room <= 0) return toast.error(`${t("Maximum")} ${MAX_IMAGES} ${t("photos per scan")}`);
     const accepted = picked.slice(0, room).filter((f) => {
-      if (f.size > 10 * 1024 * 1024) { toast.error(`${f.name}: image too large (max 10MB)`); return false; }
+      if (f.size > 10 * 1024 * 1024) { toast.error(`${f.name}: ${t("image too large (max 10MB)")}`); return false; }
       return true;
     });
-    if (picked.length > room) toast.info(`Only ${room} more photo${room > 1 ? "s" : ""} added (max ${MAX_IMAGES})`);
+    if (picked.length > room) toast.info(`${t("Only")} ${room} ${t("more photo")}${room > 1 ? "s" : ""} ${t("added (max")} ${MAX_IMAGES})`);
     accepted.forEach((f) => {
       const reader = new FileReader();
       reader.onload = () => setShots((prev) => (prev.length >= MAX_IMAGES ? prev : [...prev, { preview: reader.result as string, file: f }]));
@@ -133,7 +133,7 @@ function Identify() {
       setResult(out);
       toast.success(t("results"));
     } catch (e: any) {
-      toast.error(e.message ?? "Identification failed");
+      toast.error(e.message ?? t("Identification failed"));
     }
     setLoading(false);
   }
@@ -175,17 +175,17 @@ function Identify() {
 
         <Card className="shadow-soft"><CardContent className="space-y-2 p-4">
           <div className="flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground">
-            <MapPin className="h-4 w-4 text-primary" /> Your region
+            <MapPin className="h-4 w-4 text-primary" /> {t("Your region")}
           </div>
           <div className="grid grid-cols-2 gap-2">
             <Select value={state} onValueChange={pickState}>
-              <SelectTrigger aria-label="State"><SelectValue placeholder="State" /></SelectTrigger>
+              <SelectTrigger aria-label={t("State")}><SelectValue placeholder={t("State")} /></SelectTrigger>
               <SelectContent className="max-h-72">
                 {INDIAN_STATES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={district} onValueChange={pickDistrict} disabled={!state}>
-              <SelectTrigger aria-label="District"><SelectValue placeholder={state ? "District" : "Pick state first"} /></SelectTrigger>
+              <SelectTrigger aria-label={t("District")}><SelectValue placeholder={state ? t("District") : t("Pick state first")} /></SelectTrigger>
               <SelectContent className="max-h-72">
                 {districtsFor(state).map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
               </SelectContent>
@@ -193,22 +193,22 @@ function Identify() {
           </div>
           <p className="text-xs text-muted-foreground">
             {state
-              ? `Control steps, doses and safe options will be tailored to ${district ? district + ", " : ""}${state}.`
-              : "Choose your state and district to get control advice suited to your area."}
+              ? `${t("Control steps, doses and safe options will be tailored to")} ${district ? district + ", " : ""}${state}.`
+              : t("Choose your state and district to get control advice suited to your area.")}
           </p>
         </CardContent></Card>
 
         <Card className="shadow-soft"><CardContent className="p-4">
           {shots.length > 0 ? (
             <>
-              <img src={shots[0]!.preview} alt={`${mode} to identify`} className="mx-auto max-h-56 rounded-2xl object-contain" />
+              <img src={shots[0]!.preview} alt={`${mode} ${t("to identify")}`} className="mx-auto max-h-56 rounded-2xl object-contain" />
               <div className="mt-3 flex flex-wrap gap-2">
                 {shots.map((s, i) => (
                   <div key={i} className="relative">
-                    <img src={s.preview} alt={`Angle ${i + 1}`} className="h-16 w-16 rounded-xl border border-border object-cover" />
+                    <img src={s.preview} alt={`${t("Angle")} ${i + 1}`} className="h-16 w-16 rounded-xl border border-border object-cover" />
                     <button
                       onClick={() => removeShot(i)}
-                      aria-label={`Remove photo ${i + 1}`}
+                      aria-label={`${t("Remove photo")} ${i + 1}`}
                       className="absolute -right-1.5 -top-1.5 rounded-full bg-destructive p-0.5 text-destructive-foreground shadow-soft"
                     >
                       <X className="h-3 w-3" />
@@ -217,14 +217,14 @@ function Identify() {
                 ))}
               </div>
               <p className="mt-2 text-xs text-muted-foreground">
-                {shots.length}/{MAX_IMAGES} photos — add more angles (top, underside, close-up) for better accuracy.
+                {shots.length}/{MAX_IMAGES} {t("photos — add more angles (top, underside, close-up) for better accuracy.")}
               </p>
             </>
           ) : (
             <div className="mx-auto flex h-56 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5">
               <Sprout className="h-12 w-12 text-primary/70" />
               <p className="mt-2 px-6 text-center text-xs text-muted-foreground">{t("identifyDesc")}</p>
-              <p className="mt-1 px-6 text-center text-xs text-muted-foreground">Add up to {MAX_IMAGES} photos from different angles.</p>
+              <p className="mt-1 px-6 text-center text-xs text-muted-foreground">{t("Add up to")} {MAX_IMAGES} {t("photos from different angles.")}</p>
             </div>
           )}
 
@@ -273,13 +273,13 @@ function Identify() {
             {(state || result.region_notes?.length) && (
               <div className="flex items-center gap-2 rounded-xl bg-muted/60 px-3 py-2 text-xs font-medium text-muted-foreground">
                 <MapPin className="h-3.5 w-3.5 text-primary" />
-                Advice tailored for {district ? `${district}, ` : ""}{state || "India"}
+                {t("Advice tailored for")} {district ? `${district}, ` : ""}{state || t("India")}
               </div>
             )}
-            <Section title="Regional notes" items={result.region_notes} tone="primary" />
+            <Section title={t("Regional notes")} items={result.region_notes} tone="primary" />
             <Section title={t("control")} items={result.control} tone="accent" />
-            <Section title={`${t("control")} — ${district || state || "region"}`} items={result.regional_control} tone="accent" />
-            <Section title="Safe options" items={result.safe_options} tone="primary" />
+            <Section title={`${t("control")} — ${district || state || t("region")}`} items={result.regional_control} tone="accent" />
+            <Section title={t("Safe options")} items={result.safe_options} tone="primary" />
             <Section title="⚠" items={result.safety} tone="amber" />
 
             {result.candidates?.length > 0 && (

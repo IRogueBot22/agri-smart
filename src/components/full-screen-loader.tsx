@@ -1,4 +1,5 @@
 import { Logo } from "@/components/logo";
+import { useI18n } from "@/lib/i18n";
 
 export function FullScreenLoader({ message }: { message?: string }) {
   return (
@@ -15,11 +16,12 @@ export function FullScreenLoader({ message }: { message?: string }) {
   );
 }
 
-export function InlineLoader({ label = "Loading…" }: { label?: string }) {
+export function InlineLoader({ label }: { label?: string }) {
+  const { t } = useI18n();
   return (
     <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
       <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
-      <p className="mt-3 text-sm">{label}</p>
+      <p className="mt-3 text-sm">{label ?? t("Loading…")}</p>
     </div>
   );
 }

@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { Sparkles, Droplet, Beaker, TrendingUp } from "lucide-react";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from "recharts";
 import { z } from "zod";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/advisor")({
   validateSearch: z.object({ field: z.string().optional() }).parse,
@@ -25,6 +26,7 @@ const SOILS = ["Black Soil", "Red Soil", "Sandy Soil", "Loamy Soil", "Alluvial",
 const WATER = ["Borewell", "Canal", "Rainfed", "River", "Pond", "Drip Irrigation"];
 
 function Advisor() {
+  const { t } = useI18n();
   const { field: preselect } = Route.useSearch();
   const [fields, setFields] = useState<any[]>([]);
   const [fieldId, setFieldId] = useState<string>(preselect ?? "");
@@ -47,64 +49,64 @@ function Advisor() {
   }, []);
 
   async function run(kind: string) {
-    if (!fieldId) return toast.error("Pick a field first");
+    if (!fieldId) return toast.error(t("Pick a field first"));
     setLoading(kind);
     try {
       const fn = kind === "crop" ? crop : kind === "fertilizer" ? fert : kind === "irrigation" ? irr : yld;
       const r = await fn({ data: { fieldId, soil: soil || undefined, water: water || undefined } });
       setResult((x) => ({ ...x, [kind]: r }));
-    } catch (e: any) { toast.error(e.message ?? "Failed"); }
+    } catch (e: any) { toast.error(e.message ?? t("Failed")); }
     setLoading(null);
   }
 
   if (!fields.length) return (
-    <AppShell title="AI Advisor">
+    <AppShell title={t("AI Advisor")}>
       <div className="px-4 pt-8 text-center text-sm text-muted-foreground">
-        <p>Draw a field first to get AI advice.</p>
-        <Link to="/fields/new"><Button className="mt-4 bg-gradient-primary">Draw a field</Button></Link>
+        <p>{t("Draw a field first to get AI advice.")}</p>
+        <Link to="/fields/new"><Button className="mt-4 bg-gradient-primary">{t("Draw a field")}</Button></Link>
       </div>
     </AppShell>
   );
 
   return (
-    <AppShell title="AI Advisor" back="/home">
+    <AppShell title={t("AI Advisor")} back="/home">
       <div className="space-y-3 px-4 pt-4">
         <Card className="shadow-soft"><CardContent className="space-y-2 p-3 text-sm">
           <div>
-            <label className="text-xs text-muted-foreground">Field</label>
+            <label className="text-xs text-muted-foreground">{t("Field")}</label>
             <select value={fieldId} onChange={(e) => setFieldId(e.target.value)} className="h-10 w-full rounded-md border bg-background px-3 text-sm">
               {fields.map((f) => <option key={f.id} value={f.id}>{f.name} ({Number(f.area_acres).toFixed(2)} ac)</option>)}
             </select>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-xs text-muted-foreground">Soil (override)</label>
+              <label className="text-xs text-muted-foreground">{t("Soil (override)")}</label>
               <select value={soil} onChange={(e) => setSoil(e.target.value)} className="h-10 w-full rounded-md border bg-background px-3 text-sm">
-                <option value="">Use field's soil</option>{SOILS.map((s) => <option key={s}>{s}</option>)}
+                <option value="">{t("Use field's soil")}</option>{SOILS.map((s) => <option key={s}>{s}</option>)}
               </select>
             </div>
             <div>
-              <label className="text-xs text-muted-foreground">Water (override)</label>
+              <label className="text-xs text-muted-foreground">{t("Water (override)")}</label>
               <select value={water} onChange={(e) => setWater(e.target.value)} className="h-10 w-full rounded-md border bg-background px-3 text-sm">
-                <option value="">Use field's source</option>{WATER.map((s) => <option key={s}>{s}</option>)}
+                <option value="">{t("Use field's source")}</option>{WATER.map((s) => <option key={s}>{s}</option>)}
               </select>
             </div>
           </div>
-          <p className="text-[11px] text-muted-foreground">Season and weather are detected automatically from your field location.</p>
+          <p className="text-[11px] text-muted-foreground">{t("Season and weather are detected automatically from your field location.")}</p>
         </CardContent></Card>
 
         <Tabs value={tab} onValueChange={setTab}>
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="crop"><Sparkles className="mr-1 h-4 w-4" />Crop</TabsTrigger>
-            <TabsTrigger value="fertilizer"><Beaker className="mr-1 h-4 w-4" />Fert.</TabsTrigger>
-            <TabsTrigger value="irrigation"><Droplet className="mr-1 h-4 w-4" />Water</TabsTrigger>
-            <TabsTrigger value="yield"><TrendingUp className="mr-1 h-4 w-4" />Yield</TabsTrigger>
+            <TabsTrigger value="crop"><Sparkles className="mr-1 h-4 w-4" />{t("Crop")}</TabsTrigger>
+            <TabsTrigger value="fertilizer"><Beaker className="mr-1 h-4 w-4" />{t("Fert.")}</TabsTrigger>
+            <TabsTrigger value="irrigation"><Droplet className="mr-1 h-4 w-4" />{t("Water")}</TabsTrigger>
+            <TabsTrigger value="yield"><TrendingUp className="mr-1 h-4 w-4" />{t("Yield")}</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="crop"><Section title="Crop Recommendation" onRun={() => run("crop")} loading={loading === "crop"} data={result.crop} render={renderCrop} /></TabsContent>
-          <TabsContent value="fertilizer"><Section title="Fertilizer Recommendation" onRun={() => run("fertilizer")} loading={loading === "fertilizer"} data={result.fertilizer} render={renderFert} /></TabsContent>
-          <TabsContent value="irrigation"><Section title="Irrigation Advisory" onRun={() => run("irrigation")} loading={loading === "irrigation"} data={result.irrigation} render={renderIrr} /></TabsContent>
-          <TabsContent value="yield"><Section title="Yield Prediction" onRun={() => run("yield")} loading={loading === "yield"} data={result.yield} render={renderYield} /></TabsContent>
+          <TabsContent value="crop"><Section title={t("Crop Recommendation")} onRun={() => run("crop")} loading={loading === "crop"} data={result.crop} render={renderCrop} /></TabsContent>
+          <TabsContent value="fertilizer"><Section title={t("Fertilizer Recommendation")} onRun={() => run("fertilizer")} loading={loading === "fertilizer"} data={result.fertilizer} render={renderFert} /></TabsContent>
+          <TabsContent value="irrigation"><Section title={t("Irrigation Advisory")} onRun={() => run("irrigation")} loading={loading === "irrigation"} data={result.irrigation} render={renderIrr} /></TabsContent>
+          <TabsContent value="yield"><Section title={t("Yield Prediction")} onRun={() => run("yield")} loading={loading === "yield"} data={result.yield} render={renderYield} /></TabsContent>
         </Tabs>
       </div>
     </AppShell>
@@ -112,54 +114,55 @@ function Advisor() {
 }
 
 function Section({ title, onRun, loading, data, render }: any) {
+  const { t } = useI18n();
   return (
     <div className="mt-3 space-y-3">
-      <Button disabled={loading} onClick={onRun} className="w-full bg-gradient-primary shadow-soft">{loading ? "Analyzing…" : `Get ${title}`}</Button>
-      {data && <Card className="shadow-soft"><CardContent className="p-4 text-sm">{render(data)}</CardContent></Card>}
+      <Button disabled={loading} onClick={onRun} className="w-full bg-gradient-primary shadow-soft">{loading ? t("Analyzing…") : `${t("Get")} ${title}`}</Button>
+      {data && <Card className="shadow-soft"><CardContent className="p-4 text-sm">{render(data, t)}</CardContent></Card>}
     </div>
   );
 }
 
-function renderCrop(d: any) {
+function renderCrop(d: any, t: (s: string) => string) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <div><div className="text-xs text-muted-foreground">Recommended crop</div><div className="text-2xl font-bold text-primary">{d.crop}</div></div>
-        <div className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">{d.confidence}% confidence</div>
+        <div><div className="text-xs text-muted-foreground">{t("Recommended crop")}</div><div className="text-2xl font-bold text-primary">{d.crop}</div></div>
+        <div className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">{d.confidence}% {t("confidence")}</div>
       </div>
-      <div className="text-sm">Expected profit: <b>₹{Number(d.expected_profit_per_acre_inr ?? 0).toLocaleString("en-IN")}/acre</b></div>
+      <div className="text-sm">{t("Expected profit:")} <b>₹{Number(d.expected_profit_per_acre_inr ?? 0).toLocaleString("en-IN")}/{t("acre")}</b></div>
       {d.reasons && <ul className="mt-2 space-y-1 text-sm">{d.reasons.map((r: string, i: number) => <li key={i}>✓ {r}</li>)}</ul>}
-      {d.tips && <div className="mt-2 rounded-xl bg-accent/10 p-2 text-xs"><b>Tips:</b> {d.tips.join(" · ")}</div>}
+      {d.tips && <div className="mt-2 rounded-xl bg-accent/10 p-2 text-xs"><b>{t("Tips:")}</b> {d.tips.join(" · ")}</div>}
     </div>
   );
 }
-function renderFert(d: any) {
+function renderFert(d: any, t: (s: string) => string) {
   return (
     <div className="space-y-2">
       <div className="text-2xl font-bold text-primary">{d.fertilizer} <span className="text-sm font-normal text-muted-foreground">({d.formula})</span></div>
-      <Grid rows={[["Dose", d.dose_per_acre], ["Application", d.application_time], ["Method", d.method], ["Est. cost", `₹${Number(d.estimated_cost_per_acre_inr ?? 0).toLocaleString("en-IN")}/acre`]]} />
+      <Grid rows={[[t("Dose"), d.dose_per_acre], [t("Application"), d.application_time], [t("Method"), d.method], [t("Est. cost"), `₹${Number(d.estimated_cost_per_acre_inr ?? 0).toLocaleString("en-IN")}/${t("acre")}`]]} />
       {d.notes && <div className="mt-2 rounded-xl bg-accent/10 p-2 text-xs">{d.notes.join(" · ")}</div>}
     </div>
   );
 }
-function renderIrr(d: any) {
+function renderIrr(d: any, t: (s: string) => string) {
   const skip = d.decision === "SKIP";
   return (
     <div className="space-y-2">
-      <div className={`text-2xl font-bold ${skip ? "text-primary" : "text-accent-foreground"}`}>{skip ? "Skip Irrigation Today" : "Irrigate Today"}</div>
+      <div className={`text-2xl font-bold ${skip ? "text-primary" : "text-accent-foreground"}`}>{skip ? t("Skip Irrigation Today") : t("Irrigate Today")}</div>
       <p className="text-sm">{d.reason}</p>
-      <Grid rows={[["Amount", `${d.water_amount_liters_per_acre ?? 0} L/acre`], ["Best time", d.best_time], ["Soil moisture", d.soil_moisture], ["Confidence", `${d.confidence}%`]]} />
+      <Grid rows={[[t("Amount"), `${d.water_amount_liters_per_acre ?? 0} L/acre`], [t("Best time"), d.best_time], [t("Soil moisture"), d.soil_moisture], [t("Confidence"), `${d.confidence}%`]]} />
     </div>
   );
 }
-function renderYield(d: any) {
+function renderYield(d: any, t: (s: string) => string) {
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-2 text-sm">
-        <Stat title="Expected yield" value={`${d.expected_yield_quintals_per_acre} qtl/ac`} />
-        <Stat title="Total yield" value={`${d.total_yield_quintals} qtl`} />
-        <Stat title="Expected income" value={`₹${Number(d.expected_income_inr ?? 0).toLocaleString("en-IN")}`} />
-        <Stat title="Expected profit" value={`₹${Number(d.expected_profit_inr ?? 0).toLocaleString("en-IN")}`} />
+        <Stat title={t("Expected yield")} value={`${d.expected_yield_quintals_per_acre} qtl/ac`} />
+        <Stat title={t("Total yield")} value={`${d.total_yield_quintals} qtl`} />
+        <Stat title={t("Expected income")} value={`₹${Number(d.expected_income_inr ?? 0).toLocaleString("en-IN")}`} />
+        <Stat title={t("Expected profit")} value={`₹${Number(d.expected_profit_inr ?? 0).toLocaleString("en-IN")}`} />
       </div>
       {d.trend && (
         <div className="h-40">

@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { useI18n } from "@/lib/i18n";
 
 /** Tracks navigator.onLine and shows a subtle banner when offline. */
 export function OfflineBanner() {
+  const { t } = useI18n();
   const [online, setOnline] = useState(true);
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -18,7 +20,7 @@ export function OfflineBanner() {
   if (online) return null;
   return (
     <div className="fixed inset-x-0 top-0 z-[60] mx-auto max-w-md bg-amber-500/95 px-4 py-2 text-center text-xs font-medium text-white shadow-soft">
-      You're offline — showing cached data
+      {t("You're offline — showing cached data")}
     </div>
   );
 }

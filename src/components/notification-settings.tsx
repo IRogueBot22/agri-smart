@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { CloudRain, Leaf, Lightbulb, Moon } from "lucide-react";
 import { useNotifyPrefs } from "@/hooks/use-notify-prefs";
 import { isQuietNow, type NotifyPrefs } from "@/lib/notify-prefs";
+import { useI18n } from "@/lib/i18n";
 
 const ROWS: {
   key: keyof Pick<NotifyPrefs, "notify_weather" | "notify_recommendations" | "notify_disease">;
@@ -20,6 +21,7 @@ const ROWS: {
 ];
 
 export function NotificationSettings() {
+  const { t } = useI18n();
   const { prefs, loading, update } = useNotifyPrefs();
   const quietNow = isQuietNow(prefs);
 
@@ -27,9 +29,9 @@ export function NotificationSettings() {
     <Card className="shadow-soft">
       <CardContent className="space-y-4 p-4">
         <div>
-          <div className="font-medium">Notifications</div>
+          <div className="font-medium">{t("Notifications")}</div>
           <div className="text-xs text-muted-foreground">
-            Choose which alerts reach you{loading ? " — loading…" : ""}
+            {t("Choose which alerts reach you")}{loading ? ` — ${t("loading…")}` : ""}
           </div>
         </div>
 
@@ -38,8 +40,8 @@ export function NotificationSettings() {
             <div className="flex items-start gap-3">
               <Icon className="mt-0.5 h-4 w-4 text-primary" />
               <div>
-                <div className="text-sm font-medium">{title}</div>
-                <div className="text-xs text-muted-foreground">{desc}</div>
+                <div className="text-sm font-medium">{t(title)}</div>
+                <div className="text-xs text-muted-foreground">{t(desc)}</div>
               </div>
             </div>
             <Switch checked={prefs[key]} onCheckedChange={(v) => update({ [key]: v })} />
@@ -51,10 +53,10 @@ export function NotificationSettings() {
             <div className="flex items-start gap-3">
               <Moon className="mt-0.5 h-4 w-4 text-primary" />
               <div>
-                <div className="text-sm font-medium">Quiet hours</div>
+                <div className="text-sm font-medium">{t("Quiet hours")}</div>
                 <div className="text-xs text-muted-foreground">
-                  Silence all alerts overnight
-                  {prefs.quiet_hours_enabled && quietNow ? " — active right now" : ""}
+                  {t("Silence all alerts overnight")}
+                  {prefs.quiet_hours_enabled && quietNow ? ` — ${t("active right now")}` : ""}
                 </div>
               </div>
             </div>
@@ -67,7 +69,7 @@ export function NotificationSettings() {
           {prefs.quiet_hours_enabled && (
             <div className="mt-3 grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs">From</Label>
+                <Label className="text-xs">{t("From")}</Label>
                 <Input
                   type="time"
                   value={prefs.quiet_start}
@@ -75,7 +77,7 @@ export function NotificationSettings() {
                 />
               </div>
               <div>
-                <Label className="text-xs">To</Label>
+                <Label className="text-xs">{t("To")}</Label>
                 <Input
                   type="time"
                   value={prefs.quiet_end}

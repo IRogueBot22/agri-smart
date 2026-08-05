@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Bell, CloudRain, Bug, Landmark, TrendingUp, Sprout } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatDistanceToNow } from "date-fns";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/notifications")({
   head: () => ({ meta: [
@@ -26,6 +27,7 @@ const SAMPLE = [
 ];
 
 function Notifications() {
+  const { t } = useI18n();
   const [tab, setTab] = useState("all");
   const [rows, setRows] = useState<any[]>([]);
   useEffect(() => {
@@ -36,17 +38,17 @@ function Notifications() {
   const filtered = tab === "all" ? rows : rows.filter((r) => r.kind === tab);
 
   return (
-    <AppShell title="Notifications">
+    <AppShell title={t("Notifications")}>
       <div className="space-y-3 px-4 pt-4">
         <Tabs value={tab} onValueChange={setTab}>
           <TabsList className="grid w-full grid-cols-4 text-xs">
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="weather">Weather</TabsTrigger>
-            <TabsTrigger value="disease">Alerts</TabsTrigger>
-            <TabsTrigger value="scheme">Schemes</TabsTrigger>
+            <TabsTrigger value="all">{t("All")}</TabsTrigger>
+            <TabsTrigger value="weather">{t("Weather")}</TabsTrigger>
+            <TabsTrigger value="disease">{t("Alerts")}</TabsTrigger>
+            <TabsTrigger value="scheme">{t("Schemes")}</TabsTrigger>
           </TabsList>
         </Tabs>
-        {filtered.length === 0 && <p className="pt-8 text-center text-sm text-muted-foreground">No notifications yet.</p>}
+        {filtered.length === 0 && <p className="pt-8 text-center text-sm text-muted-foreground">{t("No notifications yet.")}</p>}
         {filtered.map((n, i) => {
           const Icon = ICONS[n.kind] ?? Bell;
           return (

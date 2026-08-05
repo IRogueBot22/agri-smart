@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { listMarketPrices } from "@/lib/public.functions";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis } from "recharts";
 import { TrendingUp, TrendingDown } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/market")({
   head: () => ({ meta: [
@@ -21,6 +22,7 @@ function fakeTrend(base: number) {
 }
 
 function Market() {
+  const { t } = useI18n();
   const list = useServerFn(listMarketPrices);
   const [rows, setRows] = useState<any[]>([]);
   const [q, setQ] = useState("");
@@ -29,9 +31,9 @@ function Market() {
   const filtered = rows.filter((r) => (r.crop + " " + r.market + " " + r.state).toLowerCase().includes(q.toLowerCase()));
 
   return (
-    <AppShell title="Market Prices" back="/home">
+    <AppShell title={t("Market Prices")} back="/home">
       <div className="space-y-3 px-4 pt-4">
-        <Input placeholder="Search crop or market…" value={q} onChange={(e) => setQ(e.target.value)} />
+        <Input placeholder={t("Search crop or market…")} value={q} onChange={(e) => setQ(e.target.value)} />
         {filtered.map((r) => {
           const diff = r.prev_price ? Number(r.price_per_quintal) - Number(r.prev_price) : 0;
           const up = diff >= 0;
@@ -58,7 +60,7 @@ function Market() {
                   <Line type="monotone" dataKey="price" stroke="var(--primary)" strokeWidth={2} dot={false} />
                 </LineChart></ResponsiveContainer>
               </div>
-              <div className="text-xs text-muted-foreground">per Quintal</div>
+              <div className="text-xs text-muted-foreground">{t("per Quintal")}</div>
             </CardContent></Card>
           );
         })}

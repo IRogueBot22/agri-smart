@@ -1,6 +1,7 @@
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { RTL_LANGS, languageName } from "./languages";
+import { translateStrings } from "./translate.functions";
 
 export type TKey =
   | "home" | "fields" | "advisor" | "alerts" | "profile"
@@ -44,16 +45,56 @@ const dicts: Record<string, Dict> = {
   sa: { home: "गृहम्", fields: "क्षेत्राणि", weed: "अपतृणम्", plant: "वनस्पतिः", seed: "बीजम्", identify: "परिचयः" },
 };
 
-type Ctx = { lang: string; setLang: (l: string) => void; t: (k: TKey) => string; langName: string; dir: "ltr" | "rtl" };
+/** t() accepts either a known TKey or any English UI string. */
+type Ctx = {
+  lang: string;
+  setLang: (l: string) => void;
+  t: (k: TKey | (string & {})) => string;
+  langName: string;
+  dir: "ltr" | "rtl";
+  translating: boolean;
+};
 
-const I18nContext = createContext<Ctx>({ lang: "en", setLang: () => {}, t: (k) => en[k], langName: "English", dir: "ltr" });
+const I18nContext = createContext<Ctx>({
+  lang: "en",
+  setLang: () => {},
+  t: (k) => (en as Record<string, string>)[k] ?? String(k),
+  langName: "English",
+  dir: "ltr",
+  translating: false,
+});
 
 export const LANG_STORAGE_KEY = "agri-lang";
+const CACHE_KEY = "agri-i18n-cache";
+
+type Cache = Record<string, Record<string, string>>;
+
+function loadCache(): Cache {
+  try {
+    return JSON.parse(localStorage.getItem(CACHE_KEY) || "{}") as Cache;
+  } catch {
+    return {};
+  }
+}
+
+function saveCache(c: Cache) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(c));
+  } catch {
+    /* quota */
+  }
+}
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [lang, setLangState] = useState("en");
+  const [cache, setCache] = useState<Cache>({});
+  const [translating, setTranslating] = useState(false);
+  const pending = useRef<Set<string>>(new Set());
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const inflight = useRef<Set<string>>(new Set());
 
   useEffect(() => {
+    setCache(loadCache());
     const stored = localStorage.getItem(LANG_STORAGE_KEY);
     if (stored) setLangState(stored);
     (async () => {
@@ -72,13 +113,59 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.dir = RTL_LANGS.has(lang) ? "rtl" : "ltr";
   }, [lang]);
 
-  const value = useMemo<Ctx>(() => ({
-    lang,
-    setLang: (l: string) => { setLangState(l); localStorage.setItem(LANG_STORAGE_KEY, l); },
-    t: (k: TKey) => dicts[lang]?.[k] ?? en[k],
-    langName: languageName(lang),
-    dir: RTL_LANGS.has(lang) ? "rtl" : "ltr",
-  }), [lang]);
+  const flush = useCallback(async (target: string) => {
+    const texts = [...pending.current].filter((s) => !inflight.current.has(s)).slice(0, 100);
+    pending.current.clear();
+    if (!texts.length || target === "en") return;
+    texts.forEach((s) => inflight.current.add(s));
+    setTranslating(true);
+    try {
+      const res = await translateStrings({ data: { language: target, texts } });
+      setCache((prev) => {
+        const next: Cache = { ...prev, [target]: { ...(prev[target] || {}), ...res.translations } };
+        saveCache(next);
+        return next;
+      });
+    } catch {
+      texts.forEach((s) => inflight.current.delete(s));
+    } finally {
+      setTranslating(false);
+    }
+  }, []);
+
+  const queue = useCallback(
+    (text: string, target: string) => {
+      if (target === "en" || inflight.current.has(text)) return;
+      pending.current.add(text);
+      if (timer.current) clearTimeout(timer.current);
+      timer.current = setTimeout(() => void flush(target), 250);
+    },
+    [flush],
+  );
+
+  const value = useMemo<Ctx>(() => {
+    const t = (k: TKey | (string & {})) => {
+      const base = (en as Record<string, string>)[k as string] ?? String(k);
+      if (lang === "en") return base;
+      const staticHit = dicts[lang]?.[k as TKey];
+      if (staticHit) return staticHit;
+      const cached = cache[lang]?.[base];
+      if (cached) return cached;
+      queue(base, lang);
+      return base;
+    };
+    return {
+      lang,
+      setLang: (l: string) => {
+        setLangState(l);
+        localStorage.setItem(LANG_STORAGE_KEY, l);
+      },
+      t,
+      langName: languageName(lang),
+      dir: RTL_LANGS.has(lang) ? "rtl" : "ltr",
+      translating,
+    };
+  }, [lang, cache, translating, queue]);
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
@@ -86,3 +173,4 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 export function useI18n() {
   return useContext(I18nContext);
 }
+
