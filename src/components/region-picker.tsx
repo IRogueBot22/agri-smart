@@ -8,6 +8,8 @@ import { COUNTRIES } from "@/lib/countries";
 import { INDIAN_STATES, districtsFor } from "@/lib/regions";
 import { listSubRegions } from "@/lib/places.functions";
 import { reverseGeocodeRegion, type ReverseGeocodeResult } from "@/lib/geocode.functions";
+import { getAccuratePosition } from "@/lib/geolocate";
+
 import { useI18n } from "@/lib/i18n";
 import type { RegionErrors } from "@/lib/region-schema";
 
