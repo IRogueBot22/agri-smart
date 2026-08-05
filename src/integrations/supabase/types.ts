@@ -138,6 +138,7 @@ export type Database = {
           apply_url: string
           benefits: string
           category: string
+          country: string
           created_at: string
           description: string
           documents: string
@@ -145,12 +146,14 @@ export type Database = {
           id: string
           image_url: string | null
           official_url: string
+          state: string | null
           title: string
         }
         Insert: {
           apply_url: string
           benefits: string
           category: string
+          country?: string
           created_at?: string
           description: string
           documents: string
@@ -158,12 +161,14 @@ export type Database = {
           id?: string
           image_url?: string | null
           official_url: string
+          state?: string | null
           title: string
         }
         Update: {
           apply_url?: string
           benefits?: string
           category?: string
+          country?: string
           created_at?: string
           description?: string
           documents?: string
@@ -171,14 +176,17 @@ export type Database = {
           id?: string
           image_url?: string | null
           official_url?: string
+          state?: string | null
           title?: string
         }
         Relationships: []
       }
       market_prices: {
         Row: {
+          country: string
           created_at: string
           crop: string
+          district: string | null
           id: string
           market: string
           prev_price: number | null
@@ -187,8 +195,10 @@ export type Database = {
           state: string
         }
         Insert: {
+          country?: string
           created_at?: string
           crop: string
+          district?: string | null
           id?: string
           market: string
           prev_price?: number | null
@@ -197,8 +207,10 @@ export type Database = {
           state: string
         }
         Update: {
+          country?: string
           created_at?: string
           crop?: string
+          district?: string | null
           id?: string
           market?: string
           prev_price?: number | null
@@ -241,6 +253,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          country: string
           created_at: string
           dark_mode: boolean
           district: string | null
@@ -248,6 +261,7 @@ export type Database = {
           full_name: string | null
           id: string
           language: string
+          mandal: string | null
           notify_disease: boolean
           notify_recommendations: boolean
           notify_weather: boolean
@@ -261,6 +275,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          country?: string
           created_at?: string
           dark_mode?: boolean
           district?: string | null
@@ -268,6 +283,7 @@ export type Database = {
           full_name?: string | null
           id: string
           language?: string
+          mandal?: string | null
           notify_disease?: boolean
           notify_recommendations?: boolean
           notify_weather?: boolean
@@ -281,6 +297,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          country?: string
           created_at?: string
           dark_mode?: boolean
           district?: string | null
@@ -288,6 +305,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           language?: string
+          mandal?: string | null
           notify_disease?: boolean
           notify_recommendations?: boolean
           notify_weather?: boolean
