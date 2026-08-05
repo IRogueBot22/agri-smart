@@ -266,6 +266,7 @@ export function RegionPicker({ value, onChange, errors }: { value: RegionValue; 
           options={villages}
           loading={busy === "village"}
           disabled={!value.district}
+          error={errors?.village ? t(errors.village) : undefined}
           onChange={(v) => onChange({ ...value, country, village: v })}
         />
       </div>
