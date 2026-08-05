@@ -27,6 +27,7 @@ function Profile() {
   const { setLang, t } = useI18n();
   const [p, setP] = useState<any>(null);
   const [dark, setDark] = useState(false);
+  const [regionErrors, setRegionErrors] = useState<RegionErrors>({});
 
   useEffect(() => {
     setDark(document.documentElement.classList.contains("dark"));
@@ -38,13 +39,31 @@ function Profile() {
   }, []);
 
   async function save() {
+    const region = {
+      country: p.country || "India",
+      state: p.state,
+      district: p.district,
+      mandal: p.mandal,
+      village: p.village,
+    };
+    const { ok, errors } = validateRegion(region);
+    setRegionErrors(errors);
+    if (!ok) return toast.error(t("Please complete your location"));
+
     const { error } = await supabase.from("profiles").update({
-      full_name: p.full_name, phone: p.phone, country: p.country || "India", village: p.village,
-      mandal: p.mandal, district: p.district, state: p.state, language: p.language,
+      full_name: (p.full_name ?? "").trim().slice(0, 100),
+      phone: (p.phone ?? "").trim().slice(0, 20),
+      country: region.country,
+      village: region.village || null,
+      mandal: region.mandal || null,
+      district: region.district,
+      state: region.state,
+      language: p.language,
     }).eq("id", p.id);
     if (error) return toast.error(error.message);
     toast.success(t("Saved"));
   }
+
 
   function toggleDark(v: boolean) {
     setDark(v);
