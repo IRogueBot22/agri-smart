@@ -33,7 +33,7 @@ export function BottomNav() {
                 <div className={cn("rounded-2xl p-1.5 transition-all", active && "bg-primary/10")}>
                   <Icon className={cn("h-5 w-5", active && "scale-110")} />
                 </div>
-                <span>{it.label}</span>
+                <span>{t(it.key)}</span>
               </Link>
             </li>
           );
