@@ -110,6 +110,9 @@ export function RegionPicker({ value, onChange, errors }: { value: RegionValue; 
   const [villages, setVillages] = useState<string[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [locating, setLocating] = useState(false);
+  const [locateStatus, setLocateStatus] = useState<string | null>(null);
+  const [accuracy, setAccuracy] = useState<number | null>(null);
+
   // Pending GPS pick shown on a small map so the farmer can confirm/adjust it.
   const [pin, setPin] = useState<{ lat: number; lng: number } | null>(null);
   const [pinResult, setPinResult] = useState<ReverseGeocodeResult | null>(null);
