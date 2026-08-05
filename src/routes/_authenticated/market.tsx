@@ -82,7 +82,7 @@ function Market() {
               <div className="flex items-start justify-between">
                 <div>
                   <div className="font-semibold">{r.crop}</div>
-                  <div className="text-xs text-muted-foreground">{r.market} · {r.state}</div>
+                  <div className="text-xs text-muted-foreground">{[r.market, r.district, r.state, r.country].filter(Boolean).join(" · ")}</div>
                 </div>
                 <div className="text-right">
                   <div className="text-lg font-bold text-primary">₹{Number(r.price_per_quintal).toLocaleString("en-IN")}</div>
