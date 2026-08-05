@@ -14,6 +14,7 @@ const items = [
 
 export function BottomNav() {
   const { pathname } = useLocation();
+  const { t } = useI18n();
   return (
     <nav className="fixed inset-x-0 bottom-0 z-50 mx-auto max-w-md border-t border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
       <ul className="flex items-center justify-around px-2 py-2">
