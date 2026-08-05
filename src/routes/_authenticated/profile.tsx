@@ -11,6 +11,7 @@ import { NotificationSettings } from "@/components/notification-settings";
 import { LogOut, User } from "lucide-react";
 import { INDIAN_LANGUAGES } from "@/lib/languages";
 import { RegionPicker } from "@/components/region-picker";
+import { validateRegion, type RegionErrors } from "@/lib/region-schema";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 
