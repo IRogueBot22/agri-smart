@@ -31,6 +31,10 @@ export const identifySpecimen = createServerFn({ method: "POST" })
     const key = process.env["LOVABLE_API_KEY"];
     if (!key) throw new Error("Missing LOVABLE_API_KEY");
     const lang = languageName(data.language);
+    const images = data.imageDataUrls?.length ? data.imageDataUrls : [data.imageDataUrl!];
+    const paths = data.storagePaths?.length ? data.storagePaths : data.storagePath ? [data.storagePath] : [];
+
+
 
     const body = {
       model: MODEL,
