@@ -2,7 +2,7 @@ import { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Loader2, LocateFixed, Check, X } from "lucide-react";
+import { Loader2, LocateFixed, Check, X, MapPinOff } from "lucide-react";
 import { toast } from "sonner";
 import { COUNTRIES } from "@/lib/countries";
 import { INDIAN_STATES, districtsFor } from "@/lib/regions";
@@ -116,6 +116,11 @@ export function RegionPicker({ value, onChange, errors }: { value: RegionValue; 
   const [locating, setLocating] = useState(false);
   const [locateStatus, setLocateStatus] = useState<string | null>(null);
   const [accuracy, setAccuracy] = useState<number | null>(null);
+  // Location permission handling: explain before asking, guide after a denial.
+  const [permission, setPermission] = useState<"unknown" | "unsupported" | "prompt" | "granted" | "denied">("unknown");
+  const [showConsent, setShowConsent] = useState(false);
+  const [geoFailed, setGeoFailed] = useState<string | null>(null);
+
 
   // Pending GPS pick shown on a small map so the farmer can confirm/adjust it.
   const [pin, setPin] = useState<{ lat: number; lng: number } | null>(null);
@@ -165,9 +170,47 @@ export function RegionPicker({ value, onChange, errors }: { value: RegionValue; 
     toast.success(t("Location confirmed"), { description: r.label ?? undefined });
   }
 
-  async function detectFromGps() {
+  // Read the current permission state (where supported) so we can tailor copy.
+  useEffect(() => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
-      toast.error(t("Location is not supported on this device"));
+      setPermission("unsupported");
+      return;
+    }
+    const perms = navigator.permissions;
+    if (!perms?.query) { setPermission("unknown"); return; }
+    let status: PermissionStatus | null = null;
+    const onChange = () => status && setPermission(status.state as "prompt" | "granted" | "denied");
+    perms
+      .query({ name: "geolocation" as PermissionName })
+      .then((s) => {
+        status = s;
+        setPermission(s.state as "prompt" | "granted" | "denied");
+        s.addEventListener("change", onChange);
+      })
+      .catch(() => setPermission("unknown"));
+    return () => status?.removeEventListener("change", onChange);
+  }, []);
+
+  /** Entry point from the button: explain first if we haven't asked yet. */
+  function requestLocation() {
+    if (permission === "unsupported") {
+      setGeoFailed("unsupported");
+      return;
+    }
+    if (permission === "denied") {
+      setGeoFailed("denied");
+      return;
+    }
+    if (permission === "granted") { detectFromGps(); return; }
+    setShowConsent(true);
+  }
+
+  async function detectFromGps() {
+    setShowConsent(false);
+    setGeoFailed(null);
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      setPermission("unsupported");
+      setGeoFailed("unsupported");
       return;
     }
     setLocating(true);
@@ -195,14 +238,19 @@ export function RegionPicker({ value, onChange, errors }: { value: RegionValue; 
       }
       await lookupPin(fix.lat, fix.lng);
     } catch (e) {
-      toast.error(t("Could not detect your location"), {
-        description: e instanceof Error ? e.message : undefined,
-      });
+      const msg = e instanceof Error ? e.message : "";
+      if (/denied/i.test(msg)) {
+        setPermission("denied");
+        setGeoFailed("denied");
+      } else if (!/cancelled/i.test(msg)) {
+        setGeoFailed("unavailable");
+      }
     } finally {
       setLocating(false);
       setLocateStatus(null);
     }
   }
+
 
 
 
@@ -268,13 +316,72 @@ export function RegionPicker({ value, onChange, errors }: { value: RegionValue; 
     <div className="space-y-3">
       <button
         type="button"
-        onClick={detectFromGps}
-        disabled={locating}
+        onClick={requestLocation}
+        disabled={locating || permission === "unsupported"}
         className="flex w-full items-center justify-center gap-2 rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-sm font-medium text-primary disabled:opacity-60"
       >
         {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}
         {locating ? t("Detecting location…") : t("Use my current location")}
       </button>
+
+      {showConsent && (
+        <div className="space-y-2 rounded-md border border-primary/30 bg-primary/5 p-3">
+          <p className="text-sm font-medium">{t("Allow location access?")}</p>
+          <p className="text-xs text-muted-foreground">
+            {t(
+              "We use your location only to fill in your country, state, district and village. It is never shared, and you can always type your region by hand.",
+            )}
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={detectFromGps}
+              className="flex-1 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground"
+            >
+              {t("Allow")}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setShowConsent(false); setGeoFailed("manual"); }}
+              className="flex-1 rounded-md border px-3 py-2 text-sm font-medium"
+            >
+              {t("Enter manually")}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {geoFailed && (
+        <div className="flex items-start gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
+          <MapPinOff className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+          <div className="space-y-1 text-xs">
+            <p className="font-medium text-foreground">
+              {geoFailed === "denied"
+                ? t("Location access is blocked")
+                : geoFailed === "unsupported"
+                  ? t("Location is not supported on this device")
+                  : geoFailed === "manual"
+                    ? t("No problem — choose your region below")
+                    : t("Could not detect your location")}
+            </p>
+            <p className="text-muted-foreground">
+              {geoFailed === "denied"
+                ? t(
+                    "Enable location for this site in your browser or phone settings, then tap Use my current location again. You can also select your region manually below.",
+                  )
+                : t("Select your country, state, district, mandal and village from the lists below.")}
+            </p>
+            <button
+              type="button"
+              onClick={() => setGeoFailed(null)}
+              className="font-medium text-primary underline"
+            >
+              {t("Dismiss")}
+            </button>
+          </div>
+        </div>
+      )}
+
 
       {(locateStatus || (accuracy != null && pin)) && (
         <p className="text-center text-xs text-muted-foreground">
