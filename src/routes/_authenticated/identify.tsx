@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { identifySpecimen } from "@/lib/identify.functions";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
-import { Camera, Upload, Loader2, Sprout, Leaf, Wheat, AlertTriangle, ShieldCheck } from "lucide-react";
+import { Camera, Upload, Loader2, Sprout, Leaf, Wheat, AlertTriangle, ShieldCheck, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
