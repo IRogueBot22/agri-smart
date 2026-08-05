@@ -155,26 +155,39 @@ export function RegionPicker({ value, onChange, errors }: { value: RegionValue; 
       return;
     }
     setLocating(true);
+    setLocateStatus(t("Searching for GPS signal…"));
     try {
-      const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 15000,
-          maximumAge: 60000,
-        }),
-      );
-      const lat = pos.coords.latitude;
-      const lng = pos.coords.longitude;
-      setPin({ lat, lng });
-      await lookupPin(lat, lng);
+      const fix = await getAccuratePosition({
+        desiredAccuracy: 50,
+        attemptTimeout: 12000,
+        retries: 3,
+        maximumAge: 30000,
+        onProgress: ({ attempt, attempts, accuracy }) => {
+          setLocateStatus(
+            accuracy == null
+              ? `${t("Searching for GPS signal…")} (${attempt}/${attempts})`
+              : `${t("Improving accuracy")} · ±${Math.round(accuracy)} m (${attempt}/${attempts})`,
+          );
+        },
+      });
+      setAccuracy(fix.accuracy);
+      setPin({ lat: fix.lat, lng: fix.lng });
+      if (fix.accuracy > 200) {
+        toast.warning(t("Weak GPS signal"), {
+          description: `${t("Accuracy")} ±${Math.round(fix.accuracy)} m — ${t("adjust the pin if needed")}`,
+        });
+      }
+      await lookupPin(fix.lat, fix.lng);
     } catch (e) {
       toast.error(t("Could not detect your location"), {
         description: e instanceof Error ? e.message : undefined,
       });
     } finally {
       setLocating(false);
+      setLocateStatus(null);
     }
   }
+
 
 
 
