@@ -116,10 +116,60 @@ export function ScanHistory({ refreshKey = 0 }: { refreshKey?: number }) {
           <History className="h-4 w-4 text-primary" />
           <div className="text-sm font-semibold">Previous scans</div>
           {loading && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
+          {filtersActive && (
+            <button type="button" onClick={clearFilters} className="ml-auto flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+              <X className="h-3 w-3" /> Clear
+            </button>
+          )}
+        </div>
+
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by name or advice…"
+            aria-label="Search previous scans"
+            className="pl-9"
+          />
+        </div>
+
+        <div className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1">
+          {verdicts.map((v) => (
+            <button
+              key={v.key}
+              type="button"
+              onClick={() => { setVerdict(v.key); setLimit(PAGE); }}
+              className={cn(
+                "shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                verdict === v.key ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground",
+              )}
+            >
+              {v.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1">
+          {ranges.map((r) => (
+            <button
+              key={r.key}
+              type="button"
+              onClick={() => { setRange(r.key); setLimit(PAGE); }}
+              className={cn(
+                "shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                range === r.key ? "border-accent bg-accent/10 text-accent-foreground" : "border-border text-muted-foreground",
+              )}
+            >
+              {r.label}
+            </button>
+          ))}
         </div>
 
         {!loading && rows.length === 0 && (
-          <p className="py-4 text-center text-sm text-muted-foreground">No scans yet — your diagnoses will appear here.</p>
+          <p className="py-4 text-center text-sm text-muted-foreground">
+            {filtersActive ? "No scans match these filters." : "No scans yet — your diagnoses will appear here."}
+          </p>
         )}
 
         <ul className="space-y-3">
