@@ -49,6 +49,7 @@ export type Database = {
           field_id: string | null
           id: string
           image_url: string
+          raw: Json | null
           recommendation: string | null
           user_id: string
         }
@@ -59,6 +60,7 @@ export type Database = {
           field_id?: string | null
           id?: string
           image_url: string
+          raw?: Json | null
           recommendation?: string | null
           user_id: string
         }
@@ -69,6 +71,7 @@ export type Database = {
           field_id?: string | null
           id?: string
           image_url?: string
+          raw?: Json | null
           recommendation?: string | null
           user_id?: string
         }

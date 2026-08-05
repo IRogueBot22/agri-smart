@@ -125,6 +125,7 @@ export const Route = createFileRoute("/api/public/ai/disease-scan")({
             disease: r.disease,
             confidence: r.confidence,
             recommendation: (r.recommendation ?? []).join(" • ") || null,
+            raw: { ...r, imageUrl: undefined, combined, ranked },
           }));
           const { data: inserted } = await caller.supabase
             .from("disease_scans")
