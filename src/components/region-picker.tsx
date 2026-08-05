@@ -82,6 +82,7 @@ function Field({
 export function RegionPicker({ value, onChange }: { value: RegionValue; onChange: (v: RegionValue) => void }) {
   const { t } = useI18n();
   const fetchSub = useServerFn(listSubRegions);
+  const reverseGeocode = useServerFn(reverseGeocodeRegion);
 
   const country = value.country || "India";
   const isIndia = country === "India";
@@ -91,8 +92,46 @@ export function RegionPicker({ value, onChange }: { value: RegionValue; onChange
   const [mandals, setMandals] = useState<string[]>([]);
   const [villages, setVillages] = useState<string[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
+  const [locating, setLocating] = useState(false);
 
   const staticDistricts = useMemo(() => (isIndia ? districtsFor(value.state) : []), [isIndia, value.state]);
+
+  async function detectFromGps() {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      toast.error(t("Location is not supported on this device"));
+      return;
+    }
+    setLocating(true);
+    try {
+      const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 60000,
+        }),
+      );
+      const r = await reverseGeocode({
+        data: { lat: pos.coords.latitude, lon: pos.coords.longitude },
+      });
+      const detectedCountry =
+        (r.country && COUNTRIES.find((c) => c.toLowerCase() === r.country!.toLowerCase())) || r.country || country;
+      onChange({
+        country: detectedCountry,
+        state: r.state ?? "",
+        district: r.district ?? "",
+        mandal: r.mandal ?? "",
+        village: r.village ?? "",
+      });
+      toast.success(t("Location detected"), { description: r.label ?? undefined });
+    } catch (e) {
+      toast.error(t("Could not detect your location"), {
+        description: e instanceof Error ? e.message : undefined,
+      });
+    } finally {
+      setLocating(false);
+    }
+  }
+
 
   async function load(
     level: "state" | "district" | "mandal" | "village",
