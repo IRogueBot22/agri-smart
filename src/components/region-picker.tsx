@@ -9,6 +9,7 @@ import { INDIAN_STATES, districtsFor } from "@/lib/regions";
 import { listSubRegions } from "@/lib/places.functions";
 import { reverseGeocodeRegion } from "@/lib/geocode.functions";
 import { useI18n } from "@/lib/i18n";
+import type { RegionErrors } from "@/lib/region-schema";
 
 export type RegionValue = {
   country?: string | null;
@@ -32,7 +33,7 @@ function writeCache(key: string, items: string[]) {
 }
 
 function Field({
-  label, value, options, loading, onChange, placeholder, disabled,
+  label, value, options, loading, onChange, placeholder, disabled, error,
 }: {
   label: string;
   value: string;
@@ -41,11 +42,13 @@ function Field({
   onChange: (v: string) => void;
   placeholder: string;
   disabled?: boolean;
+  error?: string;
 }) {
   const known = !value || options.includes(value);
   const [manual, setManual] = useState(!known && !!value);
 
   useEffect(() => { if (!value) setManual(false); }, [value]);
+
 
   return (
     <div>
@@ -55,7 +58,14 @@ function Field({
       </div>
       {manual ? (
         <div className="flex gap-1">
-          <Input value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />
+          <Input
+            value={value}
+            placeholder={placeholder}
+            maxLength={80}
+            aria-invalid={!!error}
+            className={error ? "border-destructive" : undefined}
+            onChange={(e) => onChange(e.target.value)}
+          />
           {options.length > 0 && (
             <button type="button" onClick={() => { setManual(false); onChange(""); }} className="rounded-md border px-2 text-xs">↺</button>
           )}
@@ -64,23 +74,26 @@ function Field({
         <select
           value={known ? value : ""}
           disabled={disabled}
+          aria-invalid={!!error}
           onChange={(e) => {
             if (e.target.value === OTHER) { setManual(true); onChange(""); return; }
             onChange(e.target.value);
           }}
-          className="h-10 w-full rounded-md border bg-background px-3 text-sm disabled:opacity-50"
+          className={`h-10 w-full rounded-md border bg-background px-3 text-sm disabled:opacity-50 ${error ? "border-destructive" : ""}`}
         >
           <option value="">{placeholder}</option>
           {options.map((o) => <option key={o} value={o}>{o}</option>)}
           <option value={OTHER}>Other / type manually…</option>
         </select>
       )}
+      {error && <p className="mt-1 text-xs text-destructive">{error}</p>}
     </div>
   );
 }
 
-export function RegionPicker({ value, onChange }: { value: RegionValue; onChange: (v: RegionValue) => void }) {
+export function RegionPicker({ value, onChange, errors }: { value: RegionValue; onChange: (v: RegionValue) => void; errors?: RegionErrors }) {
   const { t } = useI18n();
+
   const fetchSub = useServerFn(listSubRegions);
   const reverseGeocode = useServerFn(reverseGeocodeRegion);
 
@@ -206,11 +219,13 @@ export function RegionPicker({ value, onChange }: { value: RegionValue; onChange
         <Label className="text-xs">{t("Country")}</Label>
         <select
           value={country}
+          aria-invalid={!!errors?.country}
           onChange={(e) => onChange({ country: e.target.value, state: "", district: "", mandal: "", village: "" })}
-          className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+          className={`h-10 w-full rounded-md border bg-background px-3 text-sm ${errors?.country ? "border-destructive" : ""}`}
         >
           {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
+        {errors?.country && <p className="mt-1 text-xs text-destructive">{t(errors.country)}</p>}
       </div>
 
       <div className="grid grid-cols-2 gap-2">
@@ -220,6 +235,7 @@ export function RegionPicker({ value, onChange }: { value: RegionValue; onChange
           value={value.state ?? ""}
           options={states}
           loading={busy === "state"}
+          error={errors?.state ? t(errors.state) : undefined}
           onChange={(v) => onChange({ ...value, country, state: v, district: "", mandal: "", village: "" })}
         />
         <Field
@@ -229,6 +245,7 @@ export function RegionPicker({ value, onChange }: { value: RegionValue; onChange
           options={districts}
           loading={busy === "district"}
           disabled={!value.state}
+          error={errors?.district ? t(errors.district) : undefined}
           onChange={(v) => onChange({ ...value, country, district: v, mandal: "", village: "" })}
         />
         <Field
@@ -238,8 +255,10 @@ export function RegionPicker({ value, onChange }: { value: RegionValue; onChange
           options={mandals}
           loading={busy === "mandal"}
           disabled={!value.district}
+          error={errors?.mandal ? t(errors.mandal) : undefined}
           onChange={(v) => onChange({ ...value, country, mandal: v, village: "" })}
         />
+
         <Field
           label={t("Village")}
           placeholder={t("Select village")}
@@ -247,6 +266,7 @@ export function RegionPicker({ value, onChange }: { value: RegionValue; onChange
           options={villages}
           loading={busy === "village"}
           disabled={!value.district}
+          error={errors?.village ? t(errors.village) : undefined}
           onChange={(v) => onChange({ ...value, country, village: v })}
         />
       </div>

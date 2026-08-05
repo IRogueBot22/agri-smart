@@ -11,6 +11,7 @@ import { NotificationSettings } from "@/components/notification-settings";
 import { LogOut, User } from "lucide-react";
 import { INDIAN_LANGUAGES } from "@/lib/languages";
 import { RegionPicker } from "@/components/region-picker";
+import { validateRegion, type RegionErrors } from "@/lib/region-schema";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 
@@ -27,6 +28,7 @@ function Profile() {
   const { setLang, t } = useI18n();
   const [p, setP] = useState<any>(null);
   const [dark, setDark] = useState(false);
+  const [regionErrors, setRegionErrors] = useState<RegionErrors>({});
 
   useEffect(() => {
     setDark(document.documentElement.classList.contains("dark"));
@@ -38,13 +40,31 @@ function Profile() {
   }, []);
 
   async function save() {
+    const region = {
+      country: p.country || "India",
+      state: p.state,
+      district: p.district,
+      mandal: p.mandal,
+      village: p.village,
+    };
+    const { ok, errors } = validateRegion(region);
+    setRegionErrors(errors);
+    if (!ok) return toast.error(t("Please complete your location"));
+
     const { error } = await supabase.from("profiles").update({
-      full_name: p.full_name, phone: p.phone, country: p.country || "India", village: p.village,
-      mandal: p.mandal, district: p.district, state: p.state, language: p.language,
+      full_name: (p.full_name ?? "").trim().slice(0, 100),
+      phone: (p.phone ?? "").trim().slice(0, 20),
+      country: region.country,
+      village: region.village || null,
+      mandal: region.mandal || null,
+      district: region.district,
+      state: region.state,
+      language: p.language,
     }).eq("id", p.id);
     if (error) return toast.error(error.message);
     toast.success(t("Saved"));
   }
+
 
   function toggleDark(v: boolean) {
     setDark(v);
@@ -77,7 +97,8 @@ function Profile() {
           <div><Label>{t("Phone")}</Label><Input value={p.phone ?? ""} onChange={(e) => setP({ ...p, phone: e.target.value })} /></div>
           <RegionPicker
             value={{ country: p.country, state: p.state, district: p.district, mandal: p.mandal, village: p.village }}
-            onChange={(v) => setP({ ...p, ...v })}
+            errors={regionErrors}
+            onChange={(v) => { setP({ ...p, ...v }); setRegionErrors({}); }}
           />
           <p className="text-xs text-muted-foreground">{t("Schemes and market prices are shown for this location.")}</p>
           <div>
