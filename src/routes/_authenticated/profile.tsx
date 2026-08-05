@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { NotificationSettings } from "@/components/notification-settings";
 import { LogOut, User } from "lucide-react";
 import { INDIAN_LANGUAGES } from "@/lib/languages";
+import { COUNTRIES } from "@/lib/countries";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 
@@ -38,7 +39,8 @@ function Profile() {
 
   async function save() {
     const { error } = await supabase.from("profiles").update({
-      full_name: p.full_name, phone: p.phone, village: p.village, district: p.district, state: p.state, language: p.language,
+      full_name: p.full_name, phone: p.phone, country: p.country || "India", village: p.village,
+      mandal: p.mandal, district: p.district, state: p.state, language: p.language,
     }).eq("id", p.id);
     if (error) return toast.error(error.message);
     toast.success(t("Saved"));
@@ -73,11 +75,23 @@ function Profile() {
         <Card className="shadow-soft"><CardContent className="space-y-3 p-4">
           <div><Label>{t("Full name")}</Label><Input value={p.full_name ?? ""} onChange={(e) => setP({ ...p, full_name: e.target.value })} /></div>
           <div><Label>{t("Phone")}</Label><Input value={p.phone ?? ""} onChange={(e) => setP({ ...p, phone: e.target.value })} /></div>
-          <div className="grid grid-cols-3 gap-2">
-            <div><Label className="text-xs">{t("Village")}</Label><Input value={p.village ?? ""} onChange={(e) => setP({ ...p, village: e.target.value })} /></div>
-            <div><Label className="text-xs">{t("District")}</Label><Input value={p.district ?? ""} onChange={(e) => setP({ ...p, district: e.target.value })} /></div>
-            <div><Label className="text-xs">{t("State")}</Label><Input value={p.state ?? ""} onChange={(e) => setP({ ...p, state: e.target.value })} /></div>
+          <div>
+            <Label>{t("Country")}</Label>
+            <select
+              value={p.country ?? "India"}
+              onChange={(e) => setP({ ...p, country: e.target.value })}
+              className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+            >
+              {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
           </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div><Label className="text-xs">{t("State")}</Label><Input value={p.state ?? ""} onChange={(e) => setP({ ...p, state: e.target.value })} /></div>
+            <div><Label className="text-xs">{t("District")}</Label><Input value={p.district ?? ""} onChange={(e) => setP({ ...p, district: e.target.value })} /></div>
+            <div><Label className="text-xs">{t("Mandal / Block")}</Label><Input value={p.mandal ?? ""} onChange={(e) => setP({ ...p, mandal: e.target.value })} /></div>
+            <div><Label className="text-xs">{t("Village")}</Label><Input value={p.village ?? ""} onChange={(e) => setP({ ...p, village: e.target.value })} /></div>
+          </div>
+          <p className="text-xs text-muted-foreground">{t("Schemes and market prices are shown for this location.")}</p>
           <div>
             <Label>{t("language")}</Label>
             <select

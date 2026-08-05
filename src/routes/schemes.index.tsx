@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { listSchemes } from "@/lib/public.functions";
 import { Landmark, ChevronRight } from "lucide-react";
+import { useProfileRegion } from "@/hooks/use-profile-region";
 
 export const Route = createFileRoute("/schemes/")({
   head: () => ({ meta: [
@@ -18,15 +19,25 @@ export const Route = createFileRoute("/schemes/")({
 
 function Schemes() {
   const load = useServerFn(listSchemes);
+  const { region, loading } = useProfileRegion();
   const [rows, setRows] = useState<any[]>([]);
   const [q, setQ] = useState("");
   const [cat, setCat] = useState("");
-  useEffect(() => { load().then(setRows); }, [load]);
+  const [mine, setMine] = useState(true);
+
+  useEffect(() => {
+    if (loading) return;
+    const filters = mine && region.country ? { country: region.country, state: region.state } : {};
+    load({ data: filters }).then(setRows).catch(() => setRows([]));
+  }, [load, loading, mine, region.country, region.state]);
+
   const cats = Array.from(new Set(rows.map((r) => r.category)));
   const filtered = rows.filter((r) =>
     (r.title + " " + r.description).toLowerCase().includes(q.toLowerCase()) &&
     (!cat || r.category === cat)
   );
+
+  const regionLabel = [region.state, region.country].filter(Boolean).join(", ");
 
   return (
     <div className="mx-auto min-h-screen max-w-md bg-background pb-10">
@@ -38,12 +49,23 @@ function Schemes() {
       </header>
       <div className="space-y-3 px-4 pt-4">
         <Input placeholder="Search schemes…" value={q} onChange={(e) => setQ(e.target.value)} />
+        {region.country && (
+          <div className="flex flex-wrap gap-2">
+            <button onClick={() => setMine(true)} className={`rounded-full border px-3 py-1 text-xs ${mine ? "bg-primary text-primary-foreground" : ""}`}>
+              {regionLabel || "My region"}
+            </button>
+            <button onClick={() => setMine(false)} className={`rounded-full border px-3 py-1 text-xs ${!mine ? "bg-primary text-primary-foreground" : ""}`}>All regions</button>
+          </div>
+        )}
         <div className="flex flex-wrap gap-2">
           <button onClick={() => setCat("")} className={`rounded-full border px-3 py-1 text-xs ${!cat ? "bg-primary text-primary-foreground" : ""}`}>All</button>
           {cats.map((c) => (
             <button key={c} onClick={() => setCat(c)} className={`rounded-full border px-3 py-1 text-xs ${cat === c ? "bg-primary text-primary-foreground" : ""}`}>{c}</button>
           ))}
         </div>
+        {!loading && filtered.length === 0 && (
+          <p className="py-6 text-center text-sm text-muted-foreground">No schemes found for this region.</p>
+        )}
         {filtered.map((s) => (
           <Link key={s.id} to="/schemes/$id" params={{ id: s.id }}>
             <Card className="shadow-soft"><CardContent className="flex items-start gap-3 p-4">
