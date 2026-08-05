@@ -14,7 +14,7 @@ const optionalName = (label: string) =>
 
 const requiredName = (label: string) =>
   z
-    .string({ error: `${label} is required` })
+    .string({ required_error: `${label} is required` })
     .trim()
     .min(1, `${label} is required`)
     .max(80, `${label} must be under 80 characters`)
