@@ -1,0 +1,1 @@
+ALTER TABLE public.disease_scans ADD COLUMN IF NOT EXISTS raw jsonb;
