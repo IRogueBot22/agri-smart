@@ -11,6 +11,8 @@ const IdentifyInput = z
     imageDataUrls: z.array(z.string().startsWith("data:image/")).min(1).max(5).optional(),
     mode: z.enum(["weed", "plant", "seed"]),
     language: z.string().default("en"),
+    state: z.string().max(80).optional(),
+    district: z.string().max(80).optional(),
     storagePath: z.string().optional(),
     storagePaths: z.array(z.string()).optional(),
     fieldId: z.string().uuid().optional(),
@@ -31,6 +33,7 @@ export const identifySpecimen = createServerFn({ method: "POST" })
     const key = process.env["LOVABLE_API_KEY"];
     if (!key) throw new Error("Missing LOVABLE_API_KEY");
     const lang = languageName(data.language);
+    const region = data.district && data.state ? `${data.district} district, ${data.state}, India` : data.state ? `${data.state}, India` : "";
     const images = data.imageDataUrls?.length ? data.imageDataUrls : [data.imageDataUrl!];
     const paths = data.storagePaths?.length ? data.storagePaths : data.storagePath ? [data.storagePath] : [];
 
@@ -51,6 +54,8 @@ export const identifySpecimen = createServerFn({ method: "POST" })
               type: "text",
               text: `${modePrompt[data.mode]}
 
+${region ? `The farmer is located in ${region}. Tailor EVERYTHING to this region: local/vernacular names used there, the local cropping season and calendar, weeds and species actually common there, agro-climatic conditions (rainfall, soil, irrigation), and control measures that are practical and legally permitted in that state. Recommend only herbicides/inputs approved and commonly available in India (CIBRC-registered) with region-appropriate doses, and prefer options a smallholder there can actually buy. Mention the local KVK / state agriculture department advisory where useful.` : ""}
+
 You are given ${images.length} photo${images.length > 1 ? "s" : ""} of the SAME specimen taken from different angles or distances. Combine evidence from all photos into ONE single identification; if the photos disagree, prefer the clearest view and lower the confidence.
 
 Write EVERY human-readable string value in ${lang} (keep the scientific/botanical name in Latin script). Keep sentences short and simple for a farmer.
@@ -63,6 +68,9 @@ Respond ONLY as strict JSON with this exact shape:
 "harms":["<how it harms crops, livestock or people>"],
 "uses":["<medicinal, fodder, edible, soil, income or other uses>"],
 "control":["<organic/manual control step>","<chemical or herbicide with dose>","<preventive step>"],
+"region_notes":["<why this matters in ${region || "India"} — season, spread, local status>"],
+"regional_control":["<control step tailored to ${region || "India"}, with timing in the local season>"],
+"safe_options":["<safest low-risk / organic option available in ${region || "India"}, with dose and precaution>"],
 "safety":["<handling or toxicity warning>"],
 "candidates":[{"name":"<alternative match>","confidence":<0-100>}]}`,
             },
@@ -95,7 +103,7 @@ Respond ONLY as strict JSON with this exact shape:
       disease: `${data.mode === "weed" ? "Weed" : data.mode === "seed" ? "Seed" : "Plant"}: ${out.name ?? "Unknown"}`,
       confidence: out.confidence ?? null,
       recommendation: [...(out.control ?? []), ...(out.uses ?? [])].join(" • "),
-      raw: { ...out, mode: data.mode, language: data.language, image_count: images.length, storage_paths: paths },
+      raw: { ...out, mode: data.mode, language: data.language, state: data.state ?? null, district: data.district ?? null, image_count: images.length, storage_paths: paths },
     });
 
     return out;
