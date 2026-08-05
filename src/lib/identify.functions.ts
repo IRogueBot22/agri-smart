@@ -51,6 +51,8 @@ export const identifySpecimen = createServerFn({ method: "POST" })
               type: "text",
               text: `${modePrompt[data.mode]}
 
+You are given ${images.length} photo${images.length > 1 ? "s" : ""} of the SAME specimen taken from different angles or distances. Combine evidence from all photos into ONE single identification; if the photos disagree, prefer the clearest view and lower the confidence.
+
 Write EVERY human-readable string value in ${lang} (keep the scientific/botanical name in Latin script). Keep sentences short and simple for a farmer.
 
 Respond ONLY as strict JSON with this exact shape:
