@@ -80,6 +80,7 @@ export function AppShell({
             </Link>
           )}
           <h1 className="text-base font-semibold">{title}</h1>
+          <div className="ml-auto"><LanguageSelector /></div>
         </header>
       )}
       {onRefresh ? <PullToRefresh onRefresh={onRefresh}>{content}</PullToRefresh> : content}
