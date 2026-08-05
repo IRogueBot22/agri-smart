@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { NotificationSettings } from "@/components/notification-settings";
 import { LogOut, User } from "lucide-react";
 import { INDIAN_LANGUAGES } from "@/lib/languages";
-import { COUNTRIES } from "@/lib/countries";
+import { RegionPicker } from "@/components/region-picker";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 
@@ -75,22 +75,10 @@ function Profile() {
         <Card className="shadow-soft"><CardContent className="space-y-3 p-4">
           <div><Label>{t("Full name")}</Label><Input value={p.full_name ?? ""} onChange={(e) => setP({ ...p, full_name: e.target.value })} /></div>
           <div><Label>{t("Phone")}</Label><Input value={p.phone ?? ""} onChange={(e) => setP({ ...p, phone: e.target.value })} /></div>
-          <div>
-            <Label>{t("Country")}</Label>
-            <select
-              value={p.country ?? "India"}
-              onChange={(e) => setP({ ...p, country: e.target.value })}
-              className="h-10 w-full rounded-md border bg-background px-3 text-sm"
-            >
-              {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div><Label className="text-xs">{t("State")}</Label><Input value={p.state ?? ""} onChange={(e) => setP({ ...p, state: e.target.value })} /></div>
-            <div><Label className="text-xs">{t("District")}</Label><Input value={p.district ?? ""} onChange={(e) => setP({ ...p, district: e.target.value })} /></div>
-            <div><Label className="text-xs">{t("Mandal / Block")}</Label><Input value={p.mandal ?? ""} onChange={(e) => setP({ ...p, mandal: e.target.value })} /></div>
-            <div><Label className="text-xs">{t("Village")}</Label><Input value={p.village ?? ""} onChange={(e) => setP({ ...p, village: e.target.value })} /></div>
-          </div>
+          <RegionPicker
+            value={{ country: p.country, state: p.state, district: p.district, mandal: p.mandal, village: p.village }}
+            onChange={(v) => setP({ ...p, ...v })}
+          />
           <p className="text-xs text-muted-foreground">{t("Schemes and market prices are shown for this location.")}</p>
           <div>
             <Label>{t("language")}</Label>
