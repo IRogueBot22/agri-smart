@@ -194,8 +194,25 @@ export function ScanHistory({ refreshKey = 0 }: { refreshKey?: number }) {
                       </span>
                     )}
                   </div>
-                  <div className="text-[11px] text-muted-foreground">
-                    {formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}
+                  <div className="mt-0.5 flex items-center gap-2">
+                    {r.raw?.verdict && (
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold",
+                          r.raw.verdict === "harmful"
+                            ? "bg-destructive/15 text-destructive"
+                            : r.raw.verdict === "mixed"
+                              ? "bg-amber-500/15 text-amber-700"
+                              : "bg-primary/10 text-primary",
+                        )}
+                      >
+                        {r.raw.verdict === "harmful" ? <AlertTriangle className="h-2.5 w-2.5" /> : <ShieldCheck className="h-2.5 w-2.5" />}
+                        {r.raw.verdict}
+                      </span>
+                    )}
+                    <span className="text-[11px] text-muted-foreground">
+                      {formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}
+                    </span>
                   </div>
                   {r.recommendation && (
                     <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{r.recommendation}</p>
