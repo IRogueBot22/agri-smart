@@ -1,0 +1,27 @@
+export const COUNTRIES = [
+  "India",
+  "Bangladesh",
+  "Nepal",
+  "Sri Lanka",
+  "Pakistan",
+  "Bhutan",
+  "Myanmar",
+  "Indonesia",
+  "Philippines",
+  "Vietnam",
+  "Thailand",
+  "Kenya",
+  "Nigeria",
+  "Ethiopia",
+  "Ghana",
+  "Tanzania",
+  "Uganda",
+  "Egypt",
+  "Brazil",
+  "Mexico",
+  "United States",
+  "Australia",
+  "Other",
+];
+
+export const DEFAULT_COUNTRY = "India";

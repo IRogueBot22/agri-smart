@@ -17,16 +17,32 @@ function publicClient() {
   });
 }
 
-export const listSchemes = createServerFn({ method: "GET" }).handler(async () => {
-  const sb = publicClient();
-  const { data, error } = await sb.from("government_schemes").select("*").order("title");
-  if (error) throw new Error(error.message);
-  return data ?? [];
-});
+type RegionInput = { country?: string | null; state?: string | null; district?: string | null } | undefined;
 
-export const listMarketPrices = createServerFn({ method: "GET" }).handler(async () => {
-  const sb = publicClient();
-  const { data, error } = await sb.from("market_prices").select("*").order("crop");
-  if (error) throw new Error(error.message);
-  return data ?? [];
-});
+const regionValidator = (input: RegionInput) => input ?? {};
+
+export const listSchemes = createServerFn({ method: "GET" })
+  .inputValidator(regionValidator)
+  .handler(async ({ data }) => {
+    const sb = publicClient();
+    let q = sb.from("government_schemes").select("*");
+    if (data?.country) q = q.eq("country", data.country);
+    // state-specific schemes for this state + national schemes (state is null)
+    if (data?.state) q = q.or(`state.is.null,state.eq.${data.state}`);
+    const { data: rows, error } = await q.order("title");
+    if (error) throw new Error(error.message);
+    return rows ?? [];
+  });
+
+export const listMarketPrices = createServerFn({ method: "GET" })
+  .inputValidator(regionValidator)
+  .handler(async ({ data }) => {
+    const sb = publicClient();
+    let q = sb.from("market_prices").select("*");
+    if (data?.country) q = q.eq("country", data.country);
+    if (data?.state) q = q.eq("state", data.state);
+    if (data?.district) q = q.eq("district", data.district);
+    const { data: rows, error } = await q.order("crop");
+    if (error) throw new Error(error.message);
+    return rows ?? [];
+  });
