@@ -8,6 +8,7 @@ import { listMarketPrices } from "@/lib/public.functions";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis } from "recharts";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { useProfileRegion } from "@/hooks/use-profile-region";
 
 export const Route = createFileRoute("/_authenticated/market")({
   head: () => ({ meta: [
@@ -21,19 +22,56 @@ function fakeTrend(base: number) {
   return Array.from({ length: 7 }, (_, i) => ({ day: `D${i + 1}`, price: Math.round(base * (0.9 + Math.random() * 0.2)) }));
 }
 
+type Scope = "district" | "state" | "country" | "all";
+
 function Market() {
   const { t } = useI18n();
   const list = useServerFn(listMarketPrices);
+  const { region, loading } = useProfileRegion();
   const [rows, setRows] = useState<any[]>([]);
   const [q, setQ] = useState("");
-  useEffect(() => { list().then(setRows); }, [list]);
+  const [scope, setScope] = useState<Scope>("state");
 
-  const filtered = rows.filter((r) => (r.crop + " " + r.market + " " + r.state).toLowerCase().includes(q.toLowerCase()));
+  useEffect(() => {
+    if (loading) return;
+    const filters =
+      scope === "all" ? {}
+      : scope === "country" ? { country: region.country }
+      : scope === "state" ? { country: region.country, state: region.state }
+      : { country: region.country, state: region.state, district: region.district };
+    list({ data: filters }).then(setRows).catch(() => setRows([]));
+  }, [list, loading, scope, region.country, region.state, region.district]);
+
+  const scopes: { key: Scope; label: string }[] = [
+    { key: "district", label: region.district || t("My district") },
+    { key: "state", label: region.state || t("My state") },
+    { key: "country", label: region.country || t("My country") },
+    { key: "all", label: t("All") },
+  ];
+
+  const filtered = rows.filter((r) => (r.crop + " " + r.market + " " + (r.state ?? "")).toLowerCase().includes(q.toLowerCase()));
 
   return (
     <AppShell title={t("Market Prices")} back="/home">
       <div className="space-y-3 px-4 pt-4">
         <Input placeholder={t("Search crop or market…")} value={q} onChange={(e) => setQ(e.target.value)} />
+        <div className="flex flex-wrap gap-2">
+          {scopes.map((s) => (
+            <button
+              key={s.key}
+              onClick={() => setScope(s.key)}
+              className={`rounded-full border px-3 py-1 text-xs ${scope === s.key ? "bg-primary text-primary-foreground" : ""}`}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+        {!loading && !region.state && (
+          <p className="text-xs text-muted-foreground">{t("Set your country and region in Profile to see local prices.")}</p>
+        )}
+        {!loading && filtered.length === 0 && (
+          <p className="py-6 text-center text-sm text-muted-foreground">{t("No prices found for this region.")}</p>
+        )}
         {filtered.map((r) => {
           const diff = r.prev_price ? Number(r.price_per_quintal) - Number(r.prev_price) : 0;
           const up = diff >= 0;
