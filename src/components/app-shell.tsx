@@ -3,6 +3,7 @@ import { Home, Map, Sparkles, Bell, User, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PullToRefresh } from "@/components/pull-to-refresh";
 import { useI18n, type TKey } from "@/lib/i18n";
+import { LanguageSelector } from "@/components/language-selector";
 
 const items = [
   { to: "/home", icon: Home, key: "home" as TKey },
@@ -80,7 +81,11 @@ export function AppShell({
             </Link>
           )}
           <h1 className="text-base font-semibold">{title}</h1>
+          <div className="ml-auto"><LanguageSelector /></div>
         </header>
+      )}
+      {!title && (
+        <div className="flex justify-end px-2 pt-2"><LanguageSelector /></div>
       )}
       {onRefresh ? <PullToRefresh onRefresh={onRefresh}>{content}</PullToRefresh> : content}
       <FloatingChatButton />
