@@ -1,15 +1,19 @@
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Loader2, LocateFixed } from "lucide-react";
+import { Loader2, LocateFixed, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { COUNTRIES } from "@/lib/countries";
 import { INDIAN_STATES, districtsFor } from "@/lib/regions";
 import { listSubRegions } from "@/lib/places.functions";
-import { reverseGeocodeRegion } from "@/lib/geocode.functions";
+import { reverseGeocodeRegion, type ReverseGeocodeResult } from "@/lib/geocode.functions";
 import { useI18n } from "@/lib/i18n";
 import type { RegionErrors } from "@/lib/region-schema";
+
+const LocationPinMap = lazy(() =>
+  import("@/components/location-pin-map").then((m) => ({ default: m.LocationPinMap })),
+);
 
 export type RegionValue = {
   country?: string | null;
