@@ -192,6 +192,16 @@ export function RegionPicker({ value, onChange }: { value: RegionValue; onChange
 
   return (
     <div className="space-y-3">
+      <button
+        type="button"
+        onClick={detectFromGps}
+        disabled={locating}
+        className="flex w-full items-center justify-center gap-2 rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-sm font-medium text-primary disabled:opacity-60"
+      >
+        {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}
+        {locating ? t("Detecting location…") : t("Use my current location")}
+      </button>
+
       <div>
         <Label className="text-xs">{t("Country")}</Label>
         <select
