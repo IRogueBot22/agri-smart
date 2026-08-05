@@ -177,6 +177,7 @@ Respond ONLY as strict JSON matching this exact shape:
       disease: out.disease,
       confidence: out.confidence,
       recommendation: (out.recommendation ?? []).join(" • "),
+      raw: out,
     });
     return out;
   });
