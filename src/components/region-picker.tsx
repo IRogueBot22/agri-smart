@@ -219,11 +219,13 @@ export function RegionPicker({ value, onChange, errors }: { value: RegionValue; 
         <Label className="text-xs">{t("Country")}</Label>
         <select
           value={country}
+          aria-invalid={!!errors?.country}
           onChange={(e) => onChange({ country: e.target.value, state: "", district: "", mandal: "", village: "" })}
-          className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+          className={`h-10 w-full rounded-md border bg-background px-3 text-sm ${errors?.country ? "border-destructive" : ""}`}
         >
           {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
+        {errors?.country && <p className="mt-1 text-xs text-destructive">{t(errors.country)}</p>}
       </div>
 
       <div className="grid grid-cols-2 gap-2">
@@ -233,6 +235,7 @@ export function RegionPicker({ value, onChange, errors }: { value: RegionValue; 
           value={value.state ?? ""}
           options={states}
           loading={busy === "state"}
+          error={errors?.state ? t(errors.state) : undefined}
           onChange={(v) => onChange({ ...value, country, state: v, district: "", mandal: "", village: "" })}
         />
         <Field
@@ -242,6 +245,7 @@ export function RegionPicker({ value, onChange, errors }: { value: RegionValue; 
           options={districts}
           loading={busy === "district"}
           disabled={!value.state}
+          error={errors?.district ? t(errors.district) : undefined}
           onChange={(v) => onChange({ ...value, country, district: v, mandal: "", village: "" })}
         />
         <Field
@@ -251,8 +255,10 @@ export function RegionPicker({ value, onChange, errors }: { value: RegionValue; 
           options={mandals}
           loading={busy === "mandal"}
           disabled={!value.district}
+          error={errors?.mandal ? t(errors.mandal) : undefined}
           onChange={(v) => onChange({ ...value, country, mandal: v, village: "" })}
         />
+
         <Field
           label={t("Village")}
           placeholder={t("Select village")}
