@@ -2,7 +2,7 @@ import { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Loader2, LocateFixed, Check, X } from "lucide-react";
+import { Loader2, LocateFixed, Check, X, MapPinOff } from "lucide-react";
 import { toast } from "sonner";
 import { COUNTRIES } from "@/lib/countries";
 import { INDIAN_STATES, districtsFor } from "@/lib/regions";
