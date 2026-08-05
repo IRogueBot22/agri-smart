@@ -85,6 +85,38 @@ function saveCache(c: Cache) {
   }
 }
 
+/**
+ * Translate strings outside React (toasts, push notifications, background jobs)
+ * using the same language the farmer picked in their profile/settings.
+ * Returns a map keyed by the original English string.
+ */
+export async function translateNow(texts: string[], target?: string): Promise<Record<string, string>> {
+  const lang = target ?? (typeof localStorage !== "undefined" ? localStorage.getItem(LANG_STORAGE_KEY) : null) ?? "en";
+  const out: Record<string, string> = {};
+  const unique = [...new Set(texts.filter(Boolean))];
+  if (lang === "en") {
+    unique.forEach((s) => (out[s] = s));
+    return out;
+  }
+  const cache = loadCache();
+  const bucket = cache[lang] || {};
+  const missing = unique.filter((s) => !bucket[s]);
+  if (missing.length) {
+    try {
+      const res = await translateStrings({ data: { language: lang, texts: missing } });
+      Object.assign(bucket, res.translations);
+      cache[lang] = bucket;
+      saveCache(cache);
+    } catch {
+      /* fall back to English below */
+    }
+  }
+  unique.forEach((s) => (out[s] = bucket[s] || s));
+  return out;
+}
+
+
+
 export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [lang, setLangState] = useState("en");
   const [cache, setCache] = useState<Cache>({});

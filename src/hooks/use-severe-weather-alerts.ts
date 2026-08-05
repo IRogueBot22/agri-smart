@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchPrefs, cachedPrefs } from "@/hooks/use-notify-prefs";
 import { shouldDeliver } from "@/lib/notify-prefs";
+import { translateNow } from "@/lib/i18n";
 
 type Severity = "low" | "medium" | "high";
 type Alert = { code: string; title: string; body: string; severity: Severity };
@@ -75,6 +76,16 @@ async function fetchWeather(lat: number, lng: number) {
   return r.json();
 }
 
+/** Translate an alert into the farmer's selected language before showing/storing it. */
+async function localize(a: Alert): Promise<Alert> {
+  try {
+    const m = await translateNow([a.title, a.body]);
+    return { ...a, title: m[a.title] || a.title, body: m[a.body] || a.body };
+  } catch {
+    return a;
+  }
+}
+
 async function persist(a: Alert) {
   try {
     const { data: u } = await supabase.auth.getUser();
@@ -123,8 +134,9 @@ export function useSevereWeatherAlerts() {
           const key = `${a.code}:${dayKey}`;
           if (sent[key] && now - sent[key] < 12 * 3600 * 1000) continue;
           sent[key] = now;
-          notify(a);
-          persist(a);
+          const localized = await localize(a);
+          notify(localized);
+          persist(localized);
         }
         // prune old keys
         for (const k of Object.keys(sent)) if (now - sent[k] > 3 * 86400e3) delete sent[k];
