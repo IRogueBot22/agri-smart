@@ -9,6 +9,7 @@ import { INDIAN_STATES, districtsFor } from "@/lib/regions";
 import { listSubRegions } from "@/lib/places.functions";
 import { reverseGeocodeRegion } from "@/lib/geocode.functions";
 import { useI18n } from "@/lib/i18n";
+import type { RegionErrors } from "@/lib/region-schema";
 
 export type RegionValue = {
   country?: string | null;
