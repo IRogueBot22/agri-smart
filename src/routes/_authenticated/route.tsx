@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useSevereWeatherAlerts } from "@/hooks/use-severe-weather-alerts";
+import { useRegionAlerts } from "@/hooks/use-region-alerts";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
