@@ -1,5 +1,6 @@
 // Client-only draw/edit/delete polygon map using Leaflet + Turf for accurate area.
 import { useEffect, useRef, useState } from "react";
+import { useI18n } from "@/lib/i18n";
 import L from "leaflet";
 import turfArea from "@turf/area";
 
@@ -21,6 +22,7 @@ export function FieldMap({
   readOnly?: boolean;
   height?: number;
 }) {
+  const { t } = useI18n();
   const ref = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const layerRef = useRef<L.Polygon | null>(null);
@@ -163,7 +165,7 @@ export function FieldMap({
           L.DomEvent.stopPropagation(ev);
           setSelected((cur) => (cur === i ? null : i));
         });
-        mk.bindTooltip(`Corner ${i + 1} — drag to adjust, tap to select`, { direction: "top", offset: [0, -8] });
+        mk.bindTooltip(`${t("Corner")} ${i + 1} — ${t("drag to adjust, tap to select")}`, { direction: "top", offset: [0, -8] });
       }
       markersRef.current.push(mk);
     });
@@ -307,7 +309,7 @@ export function FieldMap({
             type="button"
             onClick={toggleLive}
             className={`rounded-xl px-3 py-1.5 border ${liveOn ? "bg-primary text-primary-foreground border-primary" : "bg-background border-border"}`}
-          >{liveOn ? "● Live location on" : "○ Live location"}</button>
+          >{liveOn ? `● ${t("Live location on")}` : `○ ${t("Live location")}`}</button>
           {liveOn && (
             <button
               type="button"
@@ -319,7 +321,7 @@ export function FieldMap({
                 }
               }}
               className={`rounded-xl px-3 py-1.5 border ${follow ? "bg-primary text-primary-foreground border-primary" : "bg-background border-border"}`}
-            >{follow ? "🎯 Following" : "🎯 Follow"}</button>
+            >{follow ? `🎯 ${t("Following")}` : `🎯 ${t("Follow")}`}</button>
           )}
           {liveInfo && (
             <span className="text-muted-foreground">±{Math.round(liveInfo.acc)} m</span>
@@ -329,7 +331,7 @@ export function FieldMap({
               type="button"
               onClick={() => mapRef.current?.setView([liveInfo.lat, liveInfo.lng], Math.max(mapRef.current.getZoom(), 17))}
               className="ml-auto rounded-xl border border-border px-3 py-1.5"
-            >Recenter</button>
+            >{t("Recenter")}</button>
           )}
         </div>
       )}
@@ -337,12 +339,12 @@ export function FieldMap({
         <div className="flex gap-2">
           <input
             className="h-10 flex-1 rounded-xl border border-input bg-background px-3 text-sm"
-            placeholder="Search location…"
+            placeholder={t("Search location…")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); locateSearch(); } }}
           />
-          <button type="button" onClick={locateSearch} className="rounded-xl bg-primary px-3 text-sm text-primary-foreground">Go</button>
+          <button type="button" onClick={locateSearch} className="rounded-xl bg-primary px-3 text-sm text-primary-foreground">{t("Go")}</button>
           <button type="button" onClick={useMyLocation} className="rounded-xl bg-secondary px-3 text-sm">📍</button>
         </div>
       )}
@@ -353,27 +355,27 @@ export function FieldMap({
               type="button"
               onClick={() => setMode("add")}
               className={`px-3 py-1.5 ${mode === "add" ? "bg-primary text-primary-foreground" : "bg-background"}`}
-            >➕ Add</button>
+            >➕ {t("Add")}</button>
             <button
               type="button"
               onClick={() => setMode("edit")}
               className={`px-3 py-1.5 border-l border-border ${mode === "edit" ? "bg-primary text-primary-foreground" : "bg-background"}`}
-            >✎ Edit / Delete</button>
+            >✎ {t("Edit / Delete")}</button>
           </div>
           <button
             type="button"
             onClick={undo}
             disabled={past.length === 0}
             className="rounded-xl border border-border px-3 py-1.5 text-xs disabled:opacity-40"
-          >↶ Undo</button>
+          >↶ {t("Undo")}</button>
           <button
             type="button"
             onClick={redo}
             disabled={future.length === 0}
             className="rounded-xl border border-border px-3 py-1.5 text-xs disabled:opacity-40"
-          >↷ Redo</button>
+          >↷ {t("Redo")}</button>
           {pts.length > 0 && (
-            <button type="button" className="ml-auto text-xs text-destructive underline" onClick={() => commit([])}>Clear all</button>
+            <button type="button" className="ml-auto text-xs text-destructive underline" onClick={() => commit([])}>{t("Clear all")}</button>
           )}
         </div>
       )}
@@ -381,14 +383,14 @@ export function FieldMap({
       {!readOnly && selected !== null && pts[selected] && (
         <div className="rounded-2xl border border-border bg-card p-3 space-y-3">
           <div className="flex items-center justify-between gap-2">
-            <div className="text-sm font-semibold">Corner {selected + 1} of {pts.length}</div>
+            <div className="text-sm font-semibold">{t("Corner")} {selected + 1} {t("of")} {pts.length}</div>
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setSelected((s) => (s === null ? null : (s + 1) % pts.length))}
                 className="rounded-xl border border-border px-2.5 py-1 text-xs"
-              >Next ›</button>
-              <button type="button" onClick={() => setSelected(null)} className="rounded-xl border border-border px-2.5 py-1 text-xs">Done</button>
+              >{t("Next")} ›</button>
+              <button type="button" onClick={() => setSelected(null)} className="rounded-xl border border-border px-2.5 py-1 text-xs">{t("Done")}</button>
             </div>
           </div>
           <div className="font-mono text-[11px] text-muted-foreground">
@@ -420,17 +422,17 @@ export function FieldMap({
               type="button"
               onClick={deleteSelected}
               className="ml-auto rounded-xl bg-destructive px-3 py-1.5 text-xs text-destructive-foreground"
-            >🗑 Delete corner</button>
+            >🗑 {t("Delete corner")}</button>
           </div>
         </div>
       )}
       {!readOnly && (
         <div className="text-xs text-muted-foreground">
           {selected !== null
-            ? "Drag the highlighted corner, or use the arrows / keyboard arrow keys for metre-precise adjustment. Delete key removes it."
+            ? t("Drag the highlighted corner, or use the arrows / keyboard arrow keys for metre-precise adjustment. Delete key removes it.")
             : mode === "add"
-              ? "Tap map to add corners, or tap an edge to insert a vertex. Drag markers to fine-tune."
-              : "Tap a corner to select it, drag to reshape, or tap an edge to insert a vertex."}
+              ? t("Tap map to add corners, or tap an edge to insert a vertex. Drag markers to fine-tune.")
+              : t("Tap a corner to select it, drag to reshape, or tap an edge to insert a vertex.")}
         </div>
       )}
     </div>

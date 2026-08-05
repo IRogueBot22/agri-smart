@@ -9,6 +9,7 @@ import { fetchWeatherClient } from "@/lib/weather-core";
 import { useAutoRefresh } from "@/hooks/use-auto-refresh";
 import { cacheGet, cacheSet } from "@/components/offline-banner";
 import { Cloud, CloudRain, Droplets, Wind, Sprout, Bug, TrendingUp, Landmark, Leaf, Sun, ScanSearch } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/home")({
   head: () => ({ meta: [
@@ -19,6 +20,7 @@ export const Route = createFileRoute("/_authenticated/home")({
 });
 
 function Home() {
+  const { t } = useI18n();
   const [name, setName] = useState("Farmer");
   const [field, setField] = useState<any>(() => cacheGet<any>("home-field"));
   const [weather, setWeather] = useState<any>(() => cacheGet<any>("home-weather"));
@@ -56,7 +58,7 @@ function Home() {
 
       <div className="space-y-4 px-4 pt-4">
         <div>
-          <p className="text-xs text-muted-foreground">Good day,</p>
+          <p className="text-xs text-muted-foreground">{t("Good day,")}</p>
           <h1 className="text-xl font-bold">{name} 👋</h1>
         </div>
 
@@ -64,16 +66,16 @@ function Home() {
           <CardContent className="p-5">
             <div className="flex items-start justify-between">
               <div>
-                <div className="text-xs opacity-90">Today's weather</div>
+                <div className="text-xs opacity-90">{t("Today's weather")}</div>
                 <div className="mt-1 text-4xl font-bold">{c ? `${Math.round(c.temperature_2m)}°C` : "—"}</div>
-                <div className="text-xs opacity-90">{weather?.advisory ?? "Loading…"}</div>
+                <div className="text-xs opacity-90">{weather?.advisory ?? t("Loading…")}</div>
               </div>
               {c && c.precipitation > 0 ? <CloudRain className="h-14 w-14 opacity-80" /> : <Sun className="h-14 w-14 opacity-80" />}
             </div>
             <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
-              <div className="rounded-xl bg-white/15 p-2"><Droplets className="mx-auto h-4 w-4" /><div className="mt-1 font-semibold">{c?.relative_humidity_2m ?? "—"}%</div><div className="opacity-80">Humidity</div></div>
-              <div className="rounded-xl bg-white/15 p-2"><Cloud className="mx-auto h-4 w-4" /><div className="mt-1 font-semibold">{weather?.weather?.daily?.precipitation_probability_max?.[0] ?? 0}%</div><div className="opacity-80">Rain</div></div>
-              <div className="rounded-xl bg-white/15 p-2"><Wind className="mx-auto h-4 w-4" /><div className="mt-1 font-semibold">{c ? Math.round(c.wind_speed_10m) : "—"} km/h</div><div className="opacity-80">Wind</div></div>
+              <div className="rounded-xl bg-white/15 p-2"><Droplets className="mx-auto h-4 w-4" /><div className="mt-1 font-semibold">{c?.relative_humidity_2m ?? "—"}%</div><div className="opacity-80">{t("Humidity")}</div></div>
+              <div className="rounded-xl bg-white/15 p-2"><Cloud className="mx-auto h-4 w-4" /><div className="mt-1 font-semibold">{weather?.weather?.daily?.precipitation_probability_max?.[0] ?? 0}%</div><div className="opacity-80">{t("Rain")}</div></div>
+              <div className="rounded-xl bg-white/15 p-2"><Wind className="mx-auto h-4 w-4" /><div className="mt-1 font-semibold">{c ? Math.round(c.wind_speed_10m) : "—"} km/h</div><div className="opacity-80">{t("Wind")}</div></div>
             </div>
           </CardContent>
         </Card>
@@ -82,9 +84,9 @@ function Home() {
           <Link to="/fields/$id" params={{ id: field.id }}>
             <Card className="shadow-soft"><CardContent className="flex items-center justify-between p-4">
               <div>
-                <div className="text-xs text-muted-foreground">My farm</div>
+                <div className="text-xs text-muted-foreground">{t("My farm")}</div>
                 <div className="font-semibold">{field.name}</div>
-                <div className="text-xs text-muted-foreground">{Number(field.area_acres).toFixed(2)} acres · {field.crop || "No crop set"} · {field.soil_type || "Soil not set"}</div>
+                <div className="text-xs text-muted-foreground">{Number(field.area_acres).toFixed(2)} acres · {field.crop || t("No crop set")} · {field.soil_type || t("Soil not set")}</div>
               </div>
               <Leaf className="h-8 w-8 text-primary" />
             </CardContent></Card>
@@ -92,21 +94,21 @@ function Home() {
         ) : (
           <Link to="/fields/new">
             <Card className="border-dashed shadow-soft"><CardContent className="p-4 text-center text-sm text-muted-foreground">
-              Draw your first field to get started →
+              {t("Draw your first field to get started")} →
             </CardContent></Card>
           </Link>
         )}
 
         <div>
-          <h2 className="mb-2 text-sm font-semibold">Quick actions</h2>
+          <h2 className="mb-2 text-sm font-semibold">{t("Quick actions")}</h2>
           <div className="grid grid-cols-3 gap-3">
-            <QuickAction to="/fields" icon={Leaf} label="My Fields" />
-            <QuickAction to="/weather" icon={Cloud} label="Weather" />
-            <QuickAction to="/advisor" icon={Sprout} label="AI Advice" />
-            <QuickAction to="/disease" icon={Bug} label="Leaf Scan" />
-            <QuickAction to="/identify" icon={ScanSearch} label="Identify" />
-            <QuickAction to="/market" icon={TrendingUp} label="Market" />
-            <QuickAction to="/schemes" icon={Landmark} label="Schemes" />
+            <QuickAction to="/fields" icon={Leaf} label={t("My Fields")} />
+            <QuickAction to="/weather" icon={Cloud} label={t("Weather")} />
+            <QuickAction to="/advisor" icon={Sprout} label={t("AI Advice")} />
+            <QuickAction to="/disease" icon={Bug} label={t("Leaf Scan")} />
+            <QuickAction to="/identify" icon={ScanSearch} label={t("Identify")} />
+            <QuickAction to="/market" icon={TrendingUp} label={t("Market")} />
+            <QuickAction to="/schemes" icon={Landmark} label={t("Schemes")} />
           </div>
         </div>
       </div>

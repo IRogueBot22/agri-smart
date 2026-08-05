@@ -8,6 +8,7 @@ import { History, Loader2, Trash2, Search, X, AlertTriangle, ShieldCheck } from 
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n";
 
 type ScanRow = {
   id: string;
@@ -28,6 +29,7 @@ type Range = "all" | "7d" | "30d" | "90d";
 const rangeDays: Record<Range, number | null> = { all: null, "7d": 7, "30d": 30, "90d": 90 };
 
 export function ScanHistory({ refreshKey = 0 }: { refreshKey?: number }) {
+  const { t } = useI18n();
   const [rows, setRows] = useState<ScanRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [limit, setLimit] = useState(PAGE);
@@ -85,18 +87,18 @@ export function ScanHistory({ refreshKey = 0 }: { refreshKey?: number }) {
   useEffect(() => { load(limit, debounced, verdict, range); }, [load, limit, debounced, verdict, range, refreshKey]);
 
   const verdicts: { key: Verdict; label: string }[] = useMemo(() => ([
-    { key: "all", label: "All" },
-    { key: "harmful", label: "Harmful" },
-    { key: "beneficial", label: "Beneficial" },
-    { key: "mixed", label: "Mixed" },
-  ]), []);
+    { key: "all", label: t("All") },
+    { key: "harmful", label: t("Harmful") },
+    { key: "beneficial", label: t("Beneficial") },
+    { key: "mixed", label: t("Mixed") },
+  ]), [t]);
 
   const ranges: { key: Range; label: string }[] = useMemo(() => ([
-    { key: "all", label: "Any time" },
-    { key: "7d", label: "7 days" },
-    { key: "30d", label: "30 days" },
-    { key: "90d", label: "90 days" },
-  ]), []);
+    { key: "all", label: t("Any time") },
+    { key: "7d", label: t("7 days") },
+    { key: "30d", label: t("30 days") },
+    { key: "90d", label: t("90 days") },
+  ]), [t]);
 
   function clearFilters() {
     setQuery(""); setDebounced(""); setVerdict("all"); setRange("all"); setLimit(PAGE);
@@ -104,9 +106,9 @@ export function ScanHistory({ refreshKey = 0 }: { refreshKey?: number }) {
 
   async function remove(id: string) {
     const { error } = await supabase.from("disease_scans").delete().eq("id", id);
-    if (error) return toast.error("Could not delete scan");
+    if (error) return toast.error(t("Could not delete scan"));
     setRows((r) => r.filter((x) => x.id !== id));
-    toast.success("Scan removed");
+    toast.success(t("Scan removed"));
   }
 
   return (
@@ -114,11 +116,11 @@ export function ScanHistory({ refreshKey = 0 }: { refreshKey?: number }) {
       <CardContent className="space-y-3 p-4">
         <div className="flex items-center gap-2">
           <History className="h-4 w-4 text-primary" />
-          <div className="text-sm font-semibold">Previous scans</div>
+          <div className="text-sm font-semibold">{t("Previous scans")}</div>
           {loading && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
           {filtersActive && (
             <button type="button" onClick={clearFilters} className="ml-auto flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-              <X className="h-3 w-3" /> Clear
+              <X className="h-3 w-3" /> {t("Clear")}
             </button>
           )}
         </div>
@@ -128,8 +130,8 @@ export function ScanHistory({ refreshKey = 0 }: { refreshKey?: number }) {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by name or advice…"
-            aria-label="Search previous scans"
+            placeholder={t("Search by name or advice…")}
+            aria-label={t("Search previous scans")}
             className="pl-9"
           />
         </div>
@@ -168,7 +170,7 @@ export function ScanHistory({ refreshKey = 0 }: { refreshKey?: number }) {
 
         {!loading && rows.length === 0 && (
           <p className="py-4 text-center text-sm text-muted-foreground">
-            {filtersActive ? "No scans match these filters." : "No scans yet — your diagnoses will appear here."}
+            {filtersActive ? t("No scans match these filters.") : t("No scans yet — your diagnoses will appear here.")}
           </p>
         )}
 
@@ -181,13 +183,13 @@ export function ScanHistory({ refreshKey = 0 }: { refreshKey?: number }) {
                 className="flex min-w-0 flex-1 items-start gap-3 rounded-xl transition-colors hover:bg-muted/50"
               >
                 {r.signedUrl ? (
-                  <img src={r.signedUrl} alt={r.disease ?? "Leaf scan"} loading="lazy" className="h-14 w-14 shrink-0 rounded-xl object-cover" />
+                  <img src={r.signedUrl} alt={r.disease ?? t("Leaf scan")} loading="lazy" className="h-14 w-14 shrink-0 rounded-xl object-cover" />
                 ) : (
                   <div className="h-14 w-14 shrink-0 rounded-xl bg-muted" />
                 )}
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="truncate text-sm font-medium">{r.disease ?? "Unknown"}</span>
+                    <span className="truncate text-sm font-medium">{r.disease ?? t("Unknown")}</span>
                     {r.confidence != null && (
                       <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
                         {Math.round(Number(r.confidence))}%
@@ -222,7 +224,7 @@ export function ScanHistory({ refreshKey = 0 }: { refreshKey?: number }) {
               <button
                 type="button"
                 onClick={() => remove(r.id)}
-                aria-label="Delete scan"
+                aria-label={t("Delete scan")}
                 className="shrink-0 rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-destructive"
               >
                 <Trash2 className="h-4 w-4" />
@@ -234,7 +236,7 @@ export function ScanHistory({ refreshKey = 0 }: { refreshKey?: number }) {
 
         {more && (
           <Button variant="outline" className="w-full" onClick={() => setLimit((l) => l + PAGE)} disabled={loading}>
-            Load more
+            {t("Load more")}
           </Button>
         )}
       </CardContent>

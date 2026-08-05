@@ -12,6 +12,7 @@ import {
   Cloud, CloudRain, Sun, Wind, Droplets, Gauge, Sunrise, Sunset,
   MapPin, RefreshCw, Thermometer, Eye, Compass,
 } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/weather")({
   head: () => ({
@@ -32,6 +33,7 @@ function windDir(deg?: number) {
 }
 
 function WeatherView() {
+  const { t } = useI18n();
   const [w, setW] = useState<any>(null);
   const [coords, setCoords] = useState<{ lat: number; lng: number; source: string } | null>(null);
   const [loading, setLoading] = useState(false);
@@ -55,7 +57,7 @@ function WeatherView() {
       coordsRef.current = next;
       setCoords(next);
     } catch (e: any) {
-      if (!silent) setError(e?.message ?? "Failed to load weather");
+      if (!silent) setError(e?.message ?? t("Failed to load weather"));
     } finally {
       if (!silent) setLoading(false);
     }
@@ -106,13 +108,13 @@ function WeatherView() {
     : [];
 
   return (
-    <AppShell title="Live Weather" back="/home">
+    <AppShell title={t("Live Weather")} back="/home">
       <div className="space-y-4 px-4 pt-4 pb-8">
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
             <MapPin className="h-3.5 w-3.5" />
             <span>
-              {w?.place ?? (coords ? `${coords.lat.toFixed(3)}, ${coords.lng.toFixed(3)}` : "Locating…")}
+              {w?.place ?? (coords ? `${coords.lat.toFixed(3)}, ${coords.lng.toFixed(3)}` : t("Locating…"))}
               {coords ? ` · ${coords.source}` : ""}
             </span>
           </div>
@@ -123,7 +125,7 @@ function WeatherView() {
             disabled={loading}
           >
             <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-            Refresh
+            {t("Refresh")}
           </Button>
         </div>
 
@@ -136,13 +138,13 @@ function WeatherView() {
         <Card className="border-0 bg-gradient-primary text-primary-foreground shadow-soft">
           <CardContent className="p-5">
             <div className="text-xs opacity-90">
-              Right now {w?.fetchedAt ? `· updated ${new Date(w.fetchedAt).toLocaleTimeString()}` : ""}
+              {t("Right now")} {w?.fetchedAt ? `· ${t("updated")} ${new Date(w.fetchedAt).toLocaleTimeString()}` : ""}
             </div>
             <div className="mt-1 flex items-center justify-between">
               <div>
                 <div className="text-5xl font-bold">{c ? `${Math.round(c.temperature_2m)}°C` : "—"}</div>
                 <div className="text-xs opacity-90">
-                  Feels like {c ? `${Math.round(c.apparent_temperature)}°` : "—"}
+                  {t("Feels like")} {c ? `${Math.round(c.apparent_temperature)}°` : "—"}
                 </div>
               </div>
               {c && c.precipitation > 0
@@ -150,27 +152,27 @@ function WeatherView() {
                 : (c?.is_day === 0 ? <Cloud className="h-16 w-16 opacity-90" /> : <Sun className="h-16 w-16 opacity-90" />)}
             </div>
             <div className="mt-4 grid grid-cols-4 gap-2 text-xs">
-              <Stat icon={Droplets} label="Humidity" value={`${c?.relative_humidity_2m ?? "—"}%`} />
-              <Stat icon={CloudRain} label="Rain" value={`${d?.precipitation_sum?.[0]?.toFixed(1) ?? 0} mm`} />
-              <Stat icon={Wind} label="Wind" value={`${c ? Math.round(c.wind_speed_10m) : "—"} km/h`} />
-              <Stat icon={Compass} label="Dir" value={windDir(c?.wind_direction_10m) || "—"} />
-              <Stat icon={Gauge} label="Pressure" value={`${c ? Math.round(c.pressure_msl) : "—"} hPa`} />
-              <Stat icon={Eye} label="Cloud" value={`${c?.cloud_cover ?? "—"}%`} />
-              <Stat icon={Thermometer} label="UV" value={`${c?.uv_index?.toFixed?.(1) ?? d?.uv_index_max?.[0]?.toFixed?.(1) ?? "—"}`} />
-              <Stat icon={Sunrise} label="Sunrise" value={d?.sunrise?.[0]?.slice(11, 16) ?? "—"} />
+              <Stat icon={Droplets} label={t("Humidity")} value={`${c?.relative_humidity_2m ?? "—"}%`} />
+              <Stat icon={CloudRain} label={t("Rain")} value={`${d?.precipitation_sum?.[0]?.toFixed(1) ?? 0} mm`} />
+              <Stat icon={Wind} label={t("Wind")} value={`${c ? Math.round(c.wind_speed_10m) : "—"} km/h`} />
+              <Stat icon={Compass} label={t("Dir")} value={windDir(c?.wind_direction_10m) || "—"} />
+              <Stat icon={Gauge} label={t("Pressure")} value={`${c ? Math.round(c.pressure_msl) : "—"} hPa`} />
+              <Stat icon={Eye} label={t("Cloud")} value={`${c?.cloud_cover ?? "—"}%`} />
+              <Stat icon={Thermometer} label={t("UV")} value={`${c?.uv_index?.toFixed?.(1) ?? d?.uv_index_max?.[0]?.toFixed?.(1) ?? "—"}`} />
+              <Stat icon={Sunrise} label={t("Sunrise")} value={d?.sunrise?.[0]?.slice(11, 16) ?? "—"} />
             </div>
           </CardContent>
         </Card>
 
         <Card className="border-accent/50 bg-accent/10 shadow-soft">
           <CardContent className="p-4 text-sm">
-            <b>Farm advisory:</b> {w?.advisory ?? "Loading…"}
+            <b>{t("Farm advisory:")}</b> {w?.advisory ?? t("Loading…")}
           </CardContent>
         </Card>
 
         {hourly.length > 0 && (
           <div>
-            <h2 className="mb-2 text-sm font-semibold">Next 24 hours</h2>
+            <h2 className="mb-2 text-sm font-semibold">{t("Next 24 hours")}</h2>
             <Card className="shadow-soft">
               <CardContent className="p-0">
                 <div className="flex gap-3 overflow-x-auto px-4 py-3">
@@ -195,7 +197,7 @@ function WeatherView() {
 
         <div>
           <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-sm font-semibold">7-Day Forecast</h2>
+            <h2 className="text-sm font-semibold">{t("7-Day Forecast")}</h2>
             <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
               <Sunrise className="h-3 w-3" /> {d?.sunrise?.[0]?.slice(11, 16) ?? "—"}
               <Sunset className="h-3 w-3" /> {d?.sunset?.[0]?.slice(11, 16) ?? "—"}
@@ -203,11 +205,11 @@ function WeatherView() {
           </div>
           <Card className="shadow-soft">
             <CardContent className="divide-y p-0">
-              {d?.time?.map((t: string, i: number) => {
-                const day = new Date(t);
+              {d?.time?.map((dayStr: string, i: number) => {
+                const day = new Date(dayStr);
                 return (
-                  <div key={t} className="flex items-center justify-between px-4 py-3 text-sm">
-                    <div className="w-14 font-medium">{i === 0 ? "Today" : DAYS[day.getDay()]}</div>
+                  <div key={dayStr} className="flex items-center justify-between px-4 py-3 text-sm">
+                    <div className="w-14 font-medium">{i === 0 ? t("Today") : DAYS[day.getDay()]}</div>
                     <div className="flex-1 text-center text-xs text-muted-foreground">
                       {d.precipitation_probability_max[i]}% · {d.precipitation_sum[i]?.toFixed(1) ?? 0} mm
                     </div>
@@ -223,7 +225,7 @@ function WeatherView() {
         </div>
 
         <p className="pt-2 text-center text-[10px] text-muted-foreground">
-          Live data from Open-Meteo · auto-refresh every 5 min
+          {t("Live data from Open-Meteo · auto-refresh every 5 min")}
         </p>
       </div>
     </AppShell>
