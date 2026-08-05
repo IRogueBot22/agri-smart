@@ -91,11 +91,11 @@ Respond ONLY as strict JSON with this exact shape:
     await context.supabase.from("disease_scans").insert({
       user_id: context.userId,
       field_id: data.fieldId ?? null,
-      image_url: data.storagePath ?? "inline",
+      image_url: paths[0] ?? "inline",
       disease: `${data.mode === "weed" ? "Weed" : data.mode === "seed" ? "Seed" : "Plant"}: ${out.name ?? "Unknown"}`,
       confidence: out.confidence ?? null,
       recommendation: [...(out.control ?? []), ...(out.uses ?? [])].join(" • "),
-      raw: { ...out, mode: data.mode, language: data.language },
+      raw: { ...out, mode: data.mode, language: data.language, image_count: images.length, storage_paths: paths },
     });
 
     return out;
