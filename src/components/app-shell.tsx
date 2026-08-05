@@ -2,13 +2,14 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { Home, Map, Sparkles, Bell, User, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PullToRefresh } from "@/components/pull-to-refresh";
+import { useI18n, type TKey } from "@/lib/i18n";
 
 const items = [
-  { to: "/home", icon: Home, label: "Home" },
-  { to: "/fields", icon: Map, label: "Fields" },
-  { to: "/advisor", icon: Sparkles, label: "AI Advisor" },
-  { to: "/notifications", icon: Bell, label: "Alerts" },
-  { to: "/profile", icon: User, label: "Profile" },
+  { to: "/home", icon: Home, key: "home" as TKey },
+  { to: "/fields", icon: Map, key: "fields" as TKey },
+  { to: "/advisor", icon: Sparkles, key: "advisor" as TKey },
+  { to: "/notifications", icon: Bell, key: "alerts" as TKey },
+  { to: "/profile", icon: User, key: "profile" as TKey },
 ] as const;
 
 export function BottomNav() {

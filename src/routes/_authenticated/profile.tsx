@@ -9,6 +9,8 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { NotificationSettings } from "@/components/notification-settings";
 import { LogOut, User } from "lucide-react";
+import { INDIAN_LANGUAGES } from "@/lib/languages";
+import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/profile")({
@@ -21,6 +23,7 @@ export const Route = createFileRoute("/_authenticated/profile")({
 
 function Profile() {
   const navigate = useNavigate();
+  const { setLang } = useI18n();
   const [p, setP] = useState<any>(null);
   const [dark, setDark] = useState(false);
 
@@ -76,10 +79,17 @@ function Profile() {
             <div><Label className="text-xs">State</Label><Input value={p.state ?? ""} onChange={(e) => setP({ ...p, state: e.target.value })} /></div>
           </div>
           <div>
-            <Label>Language</Label>
-            <select value={p.language ?? "en"} onChange={(e) => setP({ ...p, language: e.target.value })} className="h-10 w-full rounded-md border bg-background px-3 text-sm">
-              <option value="en">English</option><option value="hi">हिन्दी (Hindi)</option><option value="te">తెలుగు (Telugu)</option><option value="ta">தமிழ் (Tamil)</option>
+            <Label>Language / भाषा</Label>
+            <select
+              value={p.language ?? "en"}
+              onChange={(e) => { setP({ ...p, language: e.target.value }); setLang(e.target.value); }}
+              className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+            >
+              {INDIAN_LANGUAGES.map((l) => (
+                <option key={l.code} value={l.code}>{l.native}{l.code === "en" ? "" : ` (${l.english})`}</option>
+              ))}
             </select>
+            <p className="mt-1 text-xs text-muted-foreground">The app and all AI answers switch to this language.</p>
           </div>
           <Button onClick={save} className="w-full bg-gradient-primary shadow-soft">Save changes</Button>
         </CardContent></Card>

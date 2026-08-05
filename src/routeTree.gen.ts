@@ -19,6 +19,7 @@ import { Route as AuthenticatedWeatherRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedMarketRouteImport } from './routes/_authenticated/market'
+import { Route as AuthenticatedIdentifyRouteImport } from './routes/_authenticated/identify'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedDiseaseRouteImport } from './routes/_authenticated/disease'
 import { Route as AuthenticatedAdvisorRouteImport } from './routes/_authenticated/advisor'
@@ -80,6 +81,11 @@ const AuthenticatedNotificationsRoute =
 const AuthenticatedMarketRoute = AuthenticatedMarketRouteImport.update({
   id: '/market',
   path: '/market',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedIdentifyRoute = AuthenticatedIdentifyRouteImport.update({
+  id: '/identify',
+  path: '/identify',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
@@ -151,6 +157,7 @@ export interface FileRoutesByFullPath {
   '/advisor': typeof AuthenticatedAdvisorRoute
   '/disease': typeof AuthenticatedDiseaseRoute
   '/home': typeof AuthenticatedHomeRoute
+  '/identify': typeof AuthenticatedIdentifyRoute
   '/market': typeof AuthenticatedMarketRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -174,6 +181,7 @@ export interface FileRoutesByTo {
   '/advisor': typeof AuthenticatedAdvisorRoute
   '/disease': typeof AuthenticatedDiseaseRoute
   '/home': typeof AuthenticatedHomeRoute
+  '/identify': typeof AuthenticatedIdentifyRoute
   '/market': typeof AuthenticatedMarketRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -199,6 +207,7 @@ export interface FileRoutesById {
   '/_authenticated/advisor': typeof AuthenticatedAdvisorRoute
   '/_authenticated/disease': typeof AuthenticatedDiseaseRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
+  '/_authenticated/identify': typeof AuthenticatedIdentifyRoute
   '/_authenticated/market': typeof AuthenticatedMarketRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
@@ -224,6 +233,7 @@ export interface FileRouteTypes {
     | '/advisor'
     | '/disease'
     | '/home'
+    | '/identify'
     | '/market'
     | '/notifications'
     | '/profile'
@@ -247,6 +257,7 @@ export interface FileRouteTypes {
     | '/advisor'
     | '/disease'
     | '/home'
+    | '/identify'
     | '/market'
     | '/notifications'
     | '/profile'
@@ -271,6 +282,7 @@ export interface FileRouteTypes {
     | '/_authenticated/advisor'
     | '/_authenticated/disease'
     | '/_authenticated/home'
+    | '/_authenticated/identify'
     | '/_authenticated/market'
     | '/_authenticated/notifications'
     | '/_authenticated/profile'
@@ -374,6 +386,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMarketRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/identify': {
+      id: '/_authenticated/identify'
+      path: '/identify'
+      fullPath: '/identify'
+      preLoaderRoute: typeof AuthenticatedIdentifyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/home': {
       id: '/_authenticated/home'
       path: '/home'
@@ -465,6 +484,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdvisorRoute: typeof AuthenticatedAdvisorRoute
   AuthenticatedDiseaseRoute: typeof AuthenticatedDiseaseRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
+  AuthenticatedIdentifyRoute: typeof AuthenticatedIdentifyRoute
   AuthenticatedMarketRoute: typeof AuthenticatedMarketRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
@@ -479,6 +499,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdvisorRoute: AuthenticatedAdvisorRoute,
   AuthenticatedDiseaseRoute: AuthenticatedDiseaseRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
+  AuthenticatedIdentifyRoute: AuthenticatedIdentifyRoute,
   AuthenticatedMarketRoute: AuthenticatedMarketRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,

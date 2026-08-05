@@ -8,7 +8,7 @@ import { getWeather } from "@/lib/weather.functions";
 import { fetchWeatherClient } from "@/lib/weather-core";
 import { useAutoRefresh } from "@/hooks/use-auto-refresh";
 import { cacheGet, cacheSet } from "@/components/offline-banner";
-import { Cloud, CloudRain, Droplets, Wind, Sprout, Bug, TrendingUp, Landmark, Leaf, Sun } from "lucide-react";
+import { Cloud, CloudRain, Droplets, Wind, Sprout, Bug, TrendingUp, Landmark, Leaf, Sun, ScanSearch } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/home")({
   head: () => ({ meta: [
@@ -104,6 +104,7 @@ function Home() {
             <QuickAction to="/weather" icon={Cloud} label="Weather" />
             <QuickAction to="/advisor" icon={Sprout} label="AI Advice" />
             <QuickAction to="/disease" icon={Bug} label="Leaf Scan" />
+            <QuickAction to="/identify" icon={ScanSearch} label="Weed / Plant / Seed ID" />
             <QuickAction to="/market" icon={TrendingUp} label="Market" />
             <QuickAction to="/schemes" icon={Landmark} label="Schemes" />
           </div>
