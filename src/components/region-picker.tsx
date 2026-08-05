@@ -32,7 +32,7 @@ function writeCache(key: string, items: string[]) {
 }
 
 function Field({
-  label, value, options, loading, onChange, placeholder, disabled,
+  label, value, options, loading, onChange, placeholder, disabled, error,
 }: {
   label: string;
   value: string;
@@ -41,11 +41,13 @@ function Field({
   onChange: (v: string) => void;
   placeholder: string;
   disabled?: boolean;
+  error?: string;
 }) {
   const known = !value || options.includes(value);
   const [manual, setManual] = useState(!known && !!value);
 
   useEffect(() => { if (!value) setManual(false); }, [value]);
+
 
   return (
     <div>
