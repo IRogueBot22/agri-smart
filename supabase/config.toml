@@ -1,1 +1,7 @@
 project_id = "lgifepcnwmmouxklbwpz"
+
+[auth.email]
+otp_length = 8
+
+[auth.sms]
+otp_length = 8
