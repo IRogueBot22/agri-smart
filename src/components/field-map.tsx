@@ -404,6 +404,20 @@ export function FieldMap({
           )}
         </div>
       )}
+      <div className="flex items-center justify-end">
+        <div className="inline-flex overflow-hidden rounded-xl border border-border text-xs">
+          <button
+            type="button"
+            onClick={() => sat && toggleBasemap()}
+            className={`px-3 py-1.5 ${!sat ? "bg-primary text-primary-foreground" : "bg-background"}`}
+          >🗺 {t("Map")}</button>
+          <button
+            type="button"
+            onClick={() => !sat && toggleBasemap()}
+            className={`px-3 py-1.5 border-l border-border ${sat ? "bg-primary text-primary-foreground" : "bg-background"}`}
+          >🛰 {t("Satellite")}</button>
+        </div>
+      </div>
       <div ref={ref} className="w-full overflow-hidden rounded-2xl border border-border shadow-soft" style={{ height }} />
       {!readOnly && selected !== null && pts[selected] && (
         <div className="rounded-2xl border border-border bg-card p-3 space-y-3">
