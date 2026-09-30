@@ -45,6 +45,11 @@ export function FieldMap({
   useEffect(() => { selectedRef.current = selected; }, [selected]);
   const [step, setStep] = useState(1); // nudge step in metres
   const [search, setSearch] = useState("");
+  const [sat, setSat] = useState(false);
+  const satRef = useRef(sat);
+  useEffect(() => { satRef.current = sat; }, [sat]);
+  const baseRef = useRef<L.TileLayer | null>(null);
+  const satLayerRef = useRef<L.TileLayer | null>(null);
   const liveMarkerRef = useRef<L.Marker | null>(null);
   const liveAccRef = useRef<L.Circle | null>(null);
   const watchIdRef = useRef<number | null>(null);
@@ -80,11 +85,15 @@ export function FieldMap({
   useEffect(() => {
     if (!ref.current || mapRef.current) return;
     const m = L.map(ref.current, { zoomControl: true }).setView([20.5937, 78.9629], 5);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    baseRef.current = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "&copy; OpenStreetMap",
       maxZoom: 19,
     }).addTo(m);
-    // Satellite fallback overlay toggle via layers control (kept optional)
+    // Esri World Imagery — free satellite basemap, swapped in by the toggle.
+    satLayerRef.current = L.tileLayer(
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      { attribution: "Imagery &copy; Esri", maxZoom: 19 }
+    );
     mapRef.current = m;
 
     if (!readOnly) {
@@ -107,9 +116,22 @@ export function FieldMap({
       );
     }
 
-    return () => { m.remove(); mapRef.current = null; };
+    return () => {
+      m.remove(); mapRef.current = null; baseRef.current = null; satLayerRef.current = null;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  /** Swaps between street and satellite basemaps, keeping view and layers intact. */
+  function toggleBasemap() {
+    const m = mapRef.current;
+    if (!m) return;
+    const next = !satRef.current;
+    if (baseRef.current) baseRef.current.remove();
+    if (satLayerRef.current) satLayerRef.current.remove();
+    if (next) { satLayerRef.current?.addTo(m); } else { baseRef.current?.addTo(m); }
+    setSat(next);
+  }
 
   // Compute area/centroid and emit onChange for a given point set.
   function emitChange(next: [number, number][]) {
@@ -379,6 +401,20 @@ export function FieldMap({
           )}
         </div>
       )}
+      <div className="flex items-center justify-end">
+        <div className="inline-flex overflow-hidden rounded-xl border border-border text-xs">
+          <button
+            type="button"
+            onClick={() => sat && toggleBasemap()}
+            className={`px-3 py-1.5 ${!sat ? "bg-primary text-primary-foreground" : "bg-background"}`}
+          >🗺 {t("Map")}</button>
+          <button
+            type="button"
+            onClick={() => !sat && toggleBasemap()}
+            className={`px-3 py-1.5 border-l border-border ${sat ? "bg-primary text-primary-foreground" : "bg-background"}`}
+          >🛰 {t("Satellite")}</button>
+        </div>
+      </div>
       <div ref={ref} className="w-full overflow-hidden rounded-2xl border border-border shadow-soft" style={{ height }} />
       {!readOnly && selected !== null && pts[selected] && (
         <div className="rounded-2xl border border-border bg-card p-3 space-y-3">
