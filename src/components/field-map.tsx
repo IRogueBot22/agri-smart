@@ -130,9 +130,6 @@ export function FieldMap({
     if (baseRef.current) baseRef.current.remove();
     if (satLayerRef.current) satLayerRef.current.remove();
     if (next) { satLayerRef.current?.addTo(m); } else { baseRef.current?.addTo(m); }
-    // Keep the polygon + markers above the basemap.
-    if (layerRef.current) layerRef.current.bringToFront();
-    markersRef.current.forEach((mk) => mk.bringToFront());
     setSat(next);
   }
 

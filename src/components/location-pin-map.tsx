@@ -71,7 +71,6 @@ export function LocationPinMap({
     else { satRef.current?.addTo(map); baseRef.current?.remove(); }
     satOnRef.current = next;
     setSatOn(next);
-    markerRef.current?.bringToFront();
   }
 
   // Keep the pin in sync when coordinates change from outside (e.g. re-detect).
