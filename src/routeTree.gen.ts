@@ -9,33 +9,38 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as OnboardingRouteImport } from './routes/onboarding'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as AuthenticatedAdvisorRouteImport } from './routes/_authenticated/advisor'
+import { Route as AuthenticatedDiseaseRouteImport } from './routes/_authenticated/disease'
+import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
+import { Route as AuthenticatedIdentifyRouteImport } from './routes/_authenticated/identify'
+import { Route as AuthenticatedMarketRouteImport } from './routes/_authenticated/market'
+import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedWeatherRouteImport } from './routes/_authenticated/weather'
 import { Route as SchemesIndexRouteImport } from './routes/schemes.index'
 import { Route as SchemesIdRouteImport } from './routes/schemes.$id'
-import { Route as AuthenticatedWeatherRouteImport } from './routes/_authenticated/weather'
-import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
-import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
-import { Route as AuthenticatedMarketRouteImport } from './routes/_authenticated/market'
-import { Route as AuthenticatedIdentifyRouteImport } from './routes/_authenticated/identify'
-import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
-import { Route as AuthenticatedDiseaseRouteImport } from './routes/_authenticated/disease'
-import { Route as AuthenticatedAdvisorRouteImport } from './routes/_authenticated/advisor'
 import { Route as AuthenticatedFieldsIndexRouteImport } from './routes/_authenticated/fields.index'
-import { Route as AuthenticatedScansIdRouteImport } from './routes/_authenticated/scans.$id'
-import { Route as AuthenticatedFieldsNewRouteImport } from './routes/_authenticated/fields.new'
 import { Route as AuthenticatedFieldsIdRouteImport } from './routes/_authenticated/fields.$id'
-import { Route as ApiPublicPushSendRouteImport } from './routes/api/public/push/send'
-import { Route as ApiPublicAiDiseaseScanRouteImport } from './routes/api/public/ai/disease-scan'
-import { Route as ApiPublicAiDiseaseRouteImport } from './routes/api/public/ai/disease'
-import { Route as ApiPublicAiChatRouteImport } from './routes/api/public/ai/chat'
+import { Route as AuthenticatedFieldsNewRouteImport } from './routes/_authenticated/fields.new'
+import { Route as AuthenticatedScansIdRouteImport } from './routes/_authenticated/scans.$id'
 import { Route as ApiPublicAiAdviseRouteImport } from './routes/api/public/ai/advise'
+import { Route as ApiPublicAiChatRouteImport } from './routes/api/public/ai/chat'
+import { Route as ApiPublicAiDiseaseRouteImport } from './routes/api/public/ai/disease'
+import { Route as ApiPublicAiDiseaseScanRouteImport } from './routes/api/public/ai/disease-scan'
+import { Route as ApiPublicPushSendRouteImport } from './routes/api/public/push/send'
 
-const OnboardingRoute = OnboardingRouteImport.update({
-  id: '/onboarding',
-  path: '/onboarding',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -43,14 +48,56 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
-  id: '/_authenticated',
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAdvisorRoute = AuthenticatedAdvisorRouteImport.update({
+  id: '/advisor',
+  path: '/advisor',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDiseaseRoute = AuthenticatedDiseaseRouteImport.update({
+  id: '/disease',
+  path: '/disease',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedIdentifyRoute = AuthenticatedIdentifyRouteImport.update({
+  id: '/identify',
+  path: '/identify',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedMarketRoute = AuthenticatedMarketRouteImport.update({
+  id: '/market',
+  path: '/market',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedNotificationsRoute =
+  AuthenticatedNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedWeatherRoute = AuthenticatedWeatherRouteImport.update({
+  id: '/weather',
+  path: '/weather',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const SchemesIndexRoute = SchemesIndexRouteImport.update({
   id: '/schemes/',
@@ -62,56 +109,15 @@ const SchemesIdRoute = SchemesIdRouteImport.update({
   path: '/schemes/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedWeatherRoute = AuthenticatedWeatherRouteImport.update({
-  id: '/weather',
-  path: '/weather',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedNotificationsRoute =
-  AuthenticatedNotificationsRouteImport.update({
-    id: '/notifications',
-    path: '/notifications',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedMarketRoute = AuthenticatedMarketRouteImport.update({
-  id: '/market',
-  path: '/market',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedIdentifyRoute = AuthenticatedIdentifyRouteImport.update({
-  id: '/identify',
-  path: '/identify',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
-  id: '/home',
-  path: '/home',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedDiseaseRoute = AuthenticatedDiseaseRouteImport.update({
-  id: '/disease',
-  path: '/disease',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedAdvisorRoute = AuthenticatedAdvisorRouteImport.update({
-  id: '/advisor',
-  path: '/advisor',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedFieldsIndexRoute =
   AuthenticatedFieldsIndexRouteImport.update({
     id: '/fields/',
     path: '/fields/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedScansIdRoute = AuthenticatedScansIdRouteImport.update({
-  id: '/scans/$id',
-  path: '/scans/$id',
+const AuthenticatedFieldsIdRoute = AuthenticatedFieldsIdRouteImport.update({
+  id: '/fields/$id',
+  path: '/fields/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedFieldsNewRoute = AuthenticatedFieldsNewRouteImport.update({
@@ -119,24 +125,14 @@ const AuthenticatedFieldsNewRoute = AuthenticatedFieldsNewRouteImport.update({
   path: '/fields/new',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedFieldsIdRoute = AuthenticatedFieldsIdRouteImport.update({
-  id: '/fields/$id',
-  path: '/fields/$id',
+const AuthenticatedScansIdRoute = AuthenticatedScansIdRouteImport.update({
+  id: '/scans/$id',
+  path: '/scans/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const ApiPublicPushSendRoute = ApiPublicPushSendRouteImport.update({
-  id: '/api/public/push/send',
-  path: '/api/public/push/send',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicAiDiseaseScanRoute = ApiPublicAiDiseaseScanRouteImport.update({
-  id: '/api/public/ai/disease-scan',
-  path: '/api/public/ai/disease-scan',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicAiDiseaseRoute = ApiPublicAiDiseaseRouteImport.update({
-  id: '/api/public/ai/disease',
-  path: '/api/public/ai/disease',
+const ApiPublicAiAdviseRoute = ApiPublicAiAdviseRouteImport.update({
+  id: '/api/public/ai/advise',
+  path: '/api/public/ai/advise',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicAiChatRoute = ApiPublicAiChatRouteImport.update({
@@ -144,9 +140,19 @@ const ApiPublicAiChatRoute = ApiPublicAiChatRouteImport.update({
   path: '/api/public/ai/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicAiAdviseRoute = ApiPublicAiAdviseRouteImport.update({
-  id: '/api/public/ai/advise',
-  path: '/api/public/ai/advise',
+const ApiPublicAiDiseaseRoute = ApiPublicAiDiseaseRouteImport.update({
+  id: '/api/public/ai/disease',
+  path: '/api/public/ai/disease',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicAiDiseaseScanRoute = ApiPublicAiDiseaseScanRouteImport.update({
+  id: '/api/public/ai/disease-scan',
+  path: '/api/public/ai/disease-scan',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicPushSendRoute = ApiPublicPushSendRouteImport.update({
+  id: '/api/public/push/send',
+  path: '/api/public/push/send',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -154,6 +160,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/advisor': typeof AuthenticatedAdvisorRoute
   '/disease': typeof AuthenticatedDiseaseRoute
   '/home': typeof AuthenticatedHomeRoute
@@ -178,6 +185,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/advisor': typeof AuthenticatedAdvisorRoute
   '/disease': typeof AuthenticatedDiseaseRoute
   '/home': typeof AuthenticatedHomeRoute
@@ -204,6 +212,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/advisor': typeof AuthenticatedAdvisorRoute
   '/_authenticated/disease': typeof AuthenticatedDiseaseRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
@@ -230,6 +239,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/onboarding'
+    | '/reset-password'
     | '/advisor'
     | '/disease'
     | '/home'
@@ -254,6 +264,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/onboarding'
+    | '/reset-password'
     | '/advisor'
     | '/disease'
     | '/home'
@@ -279,6 +290,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/onboarding'
+    | '/reset-password'
     | '/_authenticated/advisor'
     | '/_authenticated/disease'
     | '/_authenticated/home'
@@ -305,6 +317,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   OnboardingRoute: typeof OnboardingRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SchemesIdRoute: typeof SchemesIdRoute
   SchemesIndexRoute: typeof SchemesIndexRoute
   ApiPublicAiAdviseRoute: typeof ApiPublicAiAdviseRoute
@@ -316,18 +329,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/onboarding': {
-      id: '/onboarding'
-      path: '/onboarding'
-      fullPath: '/onboarding'
-      preLoaderRoute: typeof OnboardingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -337,12 +343,82 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/advisor': {
+      id: '/_authenticated/advisor'
+      path: '/advisor'
+      fullPath: '/advisor'
+      preLoaderRoute: typeof AuthenticatedAdvisorRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/disease': {
+      id: '/_authenticated/disease'
+      path: '/disease'
+      fullPath: '/disease'
+      preLoaderRoute: typeof AuthenticatedDiseaseRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/home': {
+      id: '/_authenticated/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof AuthenticatedHomeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/identify': {
+      id: '/_authenticated/identify'
+      path: '/identify'
+      fullPath: '/identify'
+      preLoaderRoute: typeof AuthenticatedIdentifyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/market': {
+      id: '/_authenticated/market'
+      path: '/market'
+      fullPath: '/market'
+      preLoaderRoute: typeof AuthenticatedMarketRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/notifications': {
+      id: '/_authenticated/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/weather': {
+      id: '/_authenticated/weather'
+      path: '/weather'
+      fullPath: '/weather'
+      preLoaderRoute: typeof AuthenticatedWeatherRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/schemes/': {
       id: '/schemes/'
@@ -358,81 +434,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SchemesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/weather': {
-      id: '/_authenticated/weather'
-      path: '/weather'
-      fullPath: '/weather'
-      preLoaderRoute: typeof AuthenticatedWeatherRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/profile': {
-      id: '/_authenticated/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof AuthenticatedProfileRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/notifications': {
-      id: '/_authenticated/notifications'
-      path: '/notifications'
-      fullPath: '/notifications'
-      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/market': {
-      id: '/_authenticated/market'
-      path: '/market'
-      fullPath: '/market'
-      preLoaderRoute: typeof AuthenticatedMarketRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/identify': {
-      id: '/_authenticated/identify'
-      path: '/identify'
-      fullPath: '/identify'
-      preLoaderRoute: typeof AuthenticatedIdentifyRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/home': {
-      id: '/_authenticated/home'
-      path: '/home'
-      fullPath: '/home'
-      preLoaderRoute: typeof AuthenticatedHomeRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/disease': {
-      id: '/_authenticated/disease'
-      path: '/disease'
-      fullPath: '/disease'
-      preLoaderRoute: typeof AuthenticatedDiseaseRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/advisor': {
-      id: '/_authenticated/advisor'
-      path: '/advisor'
-      fullPath: '/advisor'
-      preLoaderRoute: typeof AuthenticatedAdvisorRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/fields/': {
       id: '/_authenticated/fields/'
       path: '/fields'
       fullPath: '/fields/'
       preLoaderRoute: typeof AuthenticatedFieldsIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/scans/$id': {
-      id: '/_authenticated/scans/$id'
-      path: '/scans/$id'
-      fullPath: '/scans/$id'
-      preLoaderRoute: typeof AuthenticatedScansIdRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/fields/new': {
-      id: '/_authenticated/fields/new'
-      path: '/fields/new'
-      fullPath: '/fields/new'
-      preLoaderRoute: typeof AuthenticatedFieldsNewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/fields/$id': {
@@ -442,25 +448,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFieldsIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/public/push/send': {
-      id: '/api/public/push/send'
-      path: '/api/public/push/send'
-      fullPath: '/api/public/push/send'
-      preLoaderRoute: typeof ApiPublicPushSendRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_authenticated/fields/new': {
+      id: '/_authenticated/fields/new'
+      path: '/fields/new'
+      fullPath: '/fields/new'
+      preLoaderRoute: typeof AuthenticatedFieldsNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/public/ai/disease-scan': {
-      id: '/api/public/ai/disease-scan'
-      path: '/api/public/ai/disease-scan'
-      fullPath: '/api/public/ai/disease-scan'
-      preLoaderRoute: typeof ApiPublicAiDiseaseScanRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_authenticated/scans/$id': {
+      id: '/_authenticated/scans/$id'
+      path: '/scans/$id'
+      fullPath: '/scans/$id'
+      preLoaderRoute: typeof AuthenticatedScansIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/public/ai/disease': {
-      id: '/api/public/ai/disease'
-      path: '/api/public/ai/disease'
-      fullPath: '/api/public/ai/disease'
-      preLoaderRoute: typeof ApiPublicAiDiseaseRouteImport
+    '/api/public/ai/advise': {
+      id: '/api/public/ai/advise'
+      path: '/api/public/ai/advise'
+      fullPath: '/api/public/ai/advise'
+      preLoaderRoute: typeof ApiPublicAiAdviseRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/ai/chat': {
@@ -470,11 +476,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicAiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/ai/advise': {
-      id: '/api/public/ai/advise'
-      path: '/api/public/ai/advise'
-      fullPath: '/api/public/ai/advise'
-      preLoaderRoute: typeof ApiPublicAiAdviseRouteImport
+    '/api/public/ai/disease': {
+      id: '/api/public/ai/disease'
+      path: '/api/public/ai/disease'
+      fullPath: '/api/public/ai/disease'
+      preLoaderRoute: typeof ApiPublicAiDiseaseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/ai/disease-scan': {
+      id: '/api/public/ai/disease-scan'
+      path: '/api/public/ai/disease-scan'
+      fullPath: '/api/public/ai/disease-scan'
+      preLoaderRoute: typeof ApiPublicAiDiseaseScanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/push/send': {
+      id: '/api/public/push/send'
+      path: '/api/public/push/send'
+      fullPath: '/api/public/push/send'
+      preLoaderRoute: typeof ApiPublicPushSendRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -518,6 +538,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   OnboardingRoute: OnboardingRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SchemesIdRoute: SchemesIdRoute,
   SchemesIndexRoute: SchemesIndexRoute,
   ApiPublicAiAdviseRoute: ApiPublicAiAdviseRoute,
