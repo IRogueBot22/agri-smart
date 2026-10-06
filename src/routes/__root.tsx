@@ -65,7 +65,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
       { rel: "apple-touch-icon", href: "/icon-192.png" },
       { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -98,6 +97,17 @@ function RootComponent() {
     if (typeof window !== "undefined") {
       const dark = localStorage.getItem("agri-dark") === "1";
       document.documentElement.classList.toggle("dark", dark);
+
+      // Clean up any injected watermarks / badges
+      const removeWatermark = () => {
+        const elements = document.querySelectorAll(
+          '#lovable-badge, .lovable-badge, [id*="lovable-badge"], [class*="lovable-badge"], [id*="lovable-watermark"], [class*="lovable-watermark"], [data-lovable-badge], a[href*="lovable.dev"], a[href*="lovable.app"]'
+        );
+        elements.forEach((el) => el.remove());
+      };
+      removeWatermark();
+      const observer = new MutationObserver(() => removeWatermark());
+      observer.observe(document.body, { childList: true, subtree: true });
     }
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED" || event === "PASSWORD_RECOVERY") {

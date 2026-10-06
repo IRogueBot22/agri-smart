@@ -114,3 +114,35 @@
 
 /* Leaflet fixes inside cards */
 .leaflet-container { font-family: inherit; }
+
+/* Suppress any Lovable watermark / badge throughout the application */
+#lovable-badge,
+.lovable-badge,
+[id*="lovable-badge"],
+[class*="lovable-badge"],
+[id*="lovable-watermark"],
+[class*="lovable-watermark"],
+[data-lovable-badge],
+[data-lovable-watermark],
+[aria-label*="Lovable" i],
+[title*="Lovable" i],
+a[href*="lovable.dev"],
+a[href*="lovable.app"],
+iframe[src*="lovable.dev"],
+div[style*="z-index: 2147483647"]:has(a[href*="lovable"]),
+div[style*="z-index: 99999"]:has(a[href*="lovable"]),
+#gpt-engineer-badge,
+.gpt-engineer-badge,
+[id*="gpt-engineer"],
+[class*="gpt-engineer"] {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  position: absolute !important;
+  left: -99999px !important;
+  top: -99999px !important;
+  width: 0 !important;
+  height: 0 !important;
+  clip: rect(0, 0, 0, 0) !important;
+}

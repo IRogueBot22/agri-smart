@@ -110,7 +110,7 @@ async function persist(a: Alert) {
 function notify(a: Alert) {
   toast(a.title, { description: a.body, duration: 8000 });
   if (typeof Notification !== "undefined" && Notification.permission === "granted") {
-    try { new Notification(a.title, { body: a.body, icon: "/favicon.ico", tag: a.code }); } catch {}
+    try { new Notification(a.title, { body: a.body, tag: a.code }); } catch {}
   }
 }
 
