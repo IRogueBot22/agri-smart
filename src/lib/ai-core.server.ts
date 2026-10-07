@@ -1,5 +1,5 @@
 import { generateText } from "ai";
-import { createLovableAiGatewayProvider } from "./ai-gateway.server";
+import { createAiGatewayProvider } from "./ai-gateway.server";
 
 export const AI_MODEL = "google/gemini-3.6-flash";
 
@@ -10,8 +10,12 @@ export function seasonFromMonth(m: number) {
 }
 
 export function requireApiKey() {
-  const key = process.env.LOVABLE_API_KEY;
-  if (!key) throw new Error("Missing LOVABLE_API_KEY");
+  const key =
+    process.env.AI_GATEWAY_API_KEY ||
+    process.env.OPENAI_API_KEY ||
+    process.env.LOVABLE_API_KEY ||
+    process.env.VITE_AI_API_KEY;
+  if (!key) throw new Error("Missing AI API Key (set AI_GATEWAY_API_KEY or OPENAI_API_KEY in environment)");
   return key;
 }
 
@@ -28,7 +32,7 @@ export function extractJson(text: string): Record<string, unknown> {
 }
 
 export async function generateJson(system: string, prompt: string) {
-  const gateway = createLovableAiGatewayProvider(requireApiKey());
+  const gateway = createAiGatewayProvider(requireApiKey());
   const { text } = await generateText({
     model: gateway(AI_MODEL),
     system,
@@ -41,7 +45,7 @@ export async function generatePlainText(
   system: string,
   messages: { role: "user" | "assistant"; content: string }[],
 ) {
-  const gateway = createLovableAiGatewayProvider(requireApiKey());
+  const gateway = createAiGatewayProvider(requireApiKey());
   const { text } = await generateText({
     model: gateway(AI_MODEL),
     system,

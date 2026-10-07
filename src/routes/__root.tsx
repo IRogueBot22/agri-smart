@@ -9,7 +9,6 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 import { OfflineBanner } from "@/components/offline-banner";
@@ -18,9 +17,6 @@ import { I18nProvider } from "@/lib/i18n";
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
-  useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
-  }, [error]);
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
@@ -64,9 +60,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
-      { rel: "stylesheet", href: appCss },
+      { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+      { rel: "icon", type: "image/png", href: "/icon-192.png" },
+      { rel: "shortcut icon", href: "/favicon.ico" },
       { rel: "apple-touch-icon", href: "/icon-192.png" },
       { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" },
@@ -98,16 +97,17 @@ function RootComponent() {
       const dark = localStorage.getItem("agri-dark") === "1";
       document.documentElement.classList.toggle("dark", dark);
 
-      // Clean up any injected watermarks / badges
-      const removeWatermark = () => {
+      const cleanupOverlays = () => {
         const elements = document.querySelectorAll(
-          '#lovable-badge, .lovable-badge, [id*="lovable-badge"], [class*="lovable-badge"], [id*="lovable-watermark"], [class*="lovable-watermark"], [data-lovable-badge], a[href*="lovable.dev"], a[href*="lovable.app"]'
+          '[id*="badge"], [class*="badge"]:not([class*="ui-"]):not([class*="lucide"]), [id*="watermark"], [class*="watermark"]'
         );
-        elements.forEach((el) => el.remove());
+        elements.forEach((el) => {
+          if (el.getAttribute("data-keep") !== "true" && !el.closest(".sidebar, .header, nav, main")) {
+            el.remove();
+          }
+        });
       };
-      removeWatermark();
-      const observer = new MutationObserver(() => removeWatermark());
-      observer.observe(document.body, { childList: true, subtree: true });
+      cleanupOverlays();
     }
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED" || event === "PASSWORD_RECOVERY") {

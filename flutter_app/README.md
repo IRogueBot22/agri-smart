@@ -4,9 +4,6 @@ Native Android/iOS client for AgriSmart AI. It talks to the **same backend** as 
 web app (Postgres + Auth + Storage), uses Open-Meteo directly for live weather,
 and calls the deployed web app's server functions for AI features.
 
-> This folder is source-only. It does **not** build or preview inside Lovable.
-> Export the project to GitHub, then build it locally with the Flutter SDK.
-
 ---
 
 ## 1. Prerequisites
@@ -24,14 +21,13 @@ flutter pub get
 
 ## 3. Configuration (no secrets in source)
 
-All config is read via `--dart-define`. Values come from your Lovable project's
-`.env` (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`).
+All config is read via `--dart-define`. Values come from your project's `.env` (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`).
 
 ```bash
 flutter run \
   --dart-define=SUPABASE_URL=https://<your-project>.supabase.co \
   --dart-define=SUPABASE_ANON_KEY=<publishable key> \
-  --dart-define=API_BASE_URL=https://farmflow-ai-advisor.lovable.app \
+  --dart-define=API_BASE_URL=https://<your-deployed-web-app> \
   --dart-define=GOOGLE_MAPS_API_KEY=<maps key>
 ```
 

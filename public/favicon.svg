@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="16" fill="#2E7D32"/>
+  <!-- Central Stem -->
+  <path d="M32 20v30" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- Center top leaf -->
+  <path d="M32 12 C26 20, 26 27, 32 32 C38 27, 38 20, 32 12 Z" fill="#FFFFFF"/>
+  <!-- Left leaf -->
+  <path d="M30 26 C19 23, 15 31, 21 38 C26 40, 30 35, 31 30 Z" fill="#FFFFFF"/>
+  <!-- Right leaf -->
+  <path d="M34 26 C45 23, 49 31, 43 38 C38 40, 34 35, 33 30 Z" fill="#FFFFFF"/>
+  <!-- Base small leaves -->
+  <path d="M31 43 C24 43, 21 47, 24 50 C28 51, 31 48, 31 46 Z" fill="#E8F5E9"/>
+  <path d="M33 43 C40 43, 43 47, 40 50 C36 51, 33 48, 33 46 Z" fill="#E8F5E9"/>
+</svg>

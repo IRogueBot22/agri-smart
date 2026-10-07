@@ -21,7 +21,7 @@ class DbService {
 
   static Future<void> signInWithGoogle() => client.auth.signInWithOAuth(
         OAuthProvider.google,
-        redirectTo: 'app.lovable.agrismart://login-callback',
+        redirectTo: 'com.agrismart.ai://login-callback',
       );
 
   static Future<void> signOut() => client.auth.signOut();

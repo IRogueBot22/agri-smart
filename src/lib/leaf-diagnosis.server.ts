@@ -84,11 +84,14 @@ export async function diagnoseLeaf(opts: {
 }): Promise<LeafDiagnosis> {
   const { imageUrl, crop, cnn } = opts;
 
-  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+  const gatewayUrl = process.env.AI_GATEWAY_URL || "https://ai.gateway.lovable.dev/v1/chat/completions";
+  const apiKey = requireApiKey();
+  const res = await fetch(gatewayUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Lovable-API-Key": requireApiKey(),
+      "Authorization": `Bearer ${apiKey}`,
+      "Lovable-API-Key": apiKey,
     },
     body: JSON.stringify({
       model: AI_MODEL,

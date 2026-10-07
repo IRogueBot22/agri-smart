@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { generateText } from "ai";
 import { z } from "zod";
-import { createLovableAiGatewayProvider } from "./ai-gateway.server";
+import { createAiGatewayProvider } from "./ai-gateway.server";
 
 const MODEL = "google/gemini-3.6-flash";
 
@@ -24,9 +24,13 @@ async function loadField(supabase: any, userId: string, fieldId: string) {
 }
 
 async function callAI(prompt: string, system: string) {
-  const key = process.env.LOVABLE_API_KEY;
-  if (!key) throw new Error("Missing LOVABLE_API_KEY");
-  const gateway = createLovableAiGatewayProvider(key);
+  const key =
+    process.env.AI_GATEWAY_API_KEY ||
+    process.env.OPENAI_API_KEY ||
+    process.env.LOVABLE_API_KEY ||
+    process.env.VITE_AI_API_KEY;
+  if (!key) throw new Error("Missing AI API Key (set AI_GATEWAY_API_KEY or OPENAI_API_KEY in environment)");
+  const gateway = createAiGatewayProvider(key);
   const { text } = await generateText({
     model: gateway(MODEL),
     system,
@@ -139,8 +143,13 @@ export const detectDisease = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => DiseaseInput.parse(d))
   .handler(async ({ data, context }) => {
-    const key = process.env.LOVABLE_API_KEY;
-    if (!key) throw new Error("Missing LOVABLE_API_KEY");
+    const key =
+      process.env.AI_GATEWAY_API_KEY ||
+      process.env.OPENAI_API_KEY ||
+      process.env.LOVABLE_API_KEY ||
+      process.env.VITE_AI_API_KEY;
+    if (!key) throw new Error("Missing AI API Key (set AI_GATEWAY_API_KEY or OPENAI_API_KEY in environment)");
+    const gatewayUrl = process.env.AI_GATEWAY_URL || "https://ai.gateway.lovable.dev/v1/chat/completions";
     const body = {
       model: MODEL,
       messages: [
@@ -156,9 +165,9 @@ Respond ONLY as strict JSON matching this exact shape:
         },
       ],
     };
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const res = await fetch(gatewayUrl, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${key}`, "Lovable-API-Key": key },
       body: JSON.stringify(body),
     });
     if (!res.ok) {

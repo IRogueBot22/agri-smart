@@ -30,8 +30,12 @@ export const identifySpecimen = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => IdentifyInput.parse(d))
   .handler(async ({ data, context }) => {
-    const key = process.env["LOVABLE_API_KEY"];
-    if (!key) throw new Error("Missing LOVABLE_API_KEY");
+    const key =
+      process.env["AI_GATEWAY_API_KEY"] ||
+      process.env["OPENAI_API_KEY"] ||
+      process.env["LOVABLE_API_KEY"] ||
+      process.env["VITE_AI_API_KEY"];
+    if (!key) throw new Error("Missing AI API Key (set AI_GATEWAY_API_KEY or OPENAI_API_KEY in environment)");
     const lang = languageName(data.language);
     const region = data.district && data.state ? `${data.district} district, ${data.state}, India` : data.state ? `${data.state}, India` : "";
     const images = data.imageDataUrls?.length ? data.imageDataUrls : [data.imageDataUrl!];
@@ -80,9 +84,10 @@ Respond ONLY as strict JSON with this exact shape:
       ],
     };
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const gatewayUrl = process.env["AI_GATEWAY_URL"] || "https://ai.gateway.lovable.dev/v1/chat/completions";
+    const res = await fetch(gatewayUrl, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${key}`, "Lovable-API-Key": key },
       body: JSON.stringify(body),
     });
     if (res.status === 429) throw new Error("AI is busy right now. Please try again in a minute.");

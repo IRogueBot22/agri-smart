@@ -31,13 +31,16 @@ export const Route = createFileRoute("/api/public/ai/disease")({
           }
           const { imageUrl, crop, fieldId, storagePath } = parsed.data;
 
+          const gatewayUrl = process.env.AI_GATEWAY_URL || "https://ai.gateway.lovable.dev/v1/chat/completions";
+          const apiKey = requireApiKey();
           const res = await fetch(
-            "https://ai.gateway.lovable.dev/v1/chat/completions",
+            gatewayUrl,
             {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                "Lovable-API-Key": requireApiKey(),
+                "Authorization": `Bearer ${apiKey}`,
+                "Lovable-API-Key": apiKey,
               },
               body: JSON.stringify({
                 model: AI_MODEL,

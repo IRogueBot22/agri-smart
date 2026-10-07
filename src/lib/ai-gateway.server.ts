@@ -1,13 +1,17 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 
-export function createLovableAiGatewayProvider(lovableApiKey: string) {
+export function createAiGatewayProvider(apiKey: string) {
+  const baseURL = process.env.AI_GATEWAY_URL || "https://ai.gateway.lovable.dev/v1";
   return createOpenAICompatible({
-    name: "lovable",
-    baseURL: "https://ai.gateway.lovable.dev/v1",
+    name: "ai-gateway",
+    baseURL,
     supportsStructuredOutputs: false,
     headers: {
-      "Lovable-API-Key": lovableApiKey,
-      "X-Lovable-AIG-SDK": "vercel-ai-sdk",
+      "Authorization": `Bearer ${apiKey}`,
+      "Lovable-API-Key": apiKey,
     },
   });
 }
+
+// Alias for backwards compatibility
+export const createLovableAiGatewayProvider = createAiGatewayProvider;

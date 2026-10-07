@@ -6,7 +6,7 @@ class AppConfig {
   /// Deployed web app base URL — hosts the AI server functions.
   static const apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://farmflow-ai-advisor.lovable.app',
+    defaultValue: '',
   );
 
   static const googleMapsApiKey = String.fromEnvironment('GOOGLE_MAPS_API_KEY');
