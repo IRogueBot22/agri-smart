@@ -273,5 +273,4 @@ function Profile() {
       </div>
     </AppShell>
   );
-}
-
+} 
